@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Getränkestand Kasse</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f1115">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#0f1115; --card:#1a1d24; --card2:#232733; --accent:#3b82f6;
+  --accent2:#22c55e; --danger:#ef4444; --text:#f1f5f9; --muted:#94a3b8;
+  --border:#2d323d;
+  --tile:170px;
+  --gridcols:repeat(auto-fill,minmax(var(--tile),1fr));
+  --hdr:73px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,system-ui,sans-serif}
+body{padding-bottom:220px}
+header{
+  position:sticky;top:0;z-index:20;background:var(--bg);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--border)
+}
+header h1{font-size:18px;font-weight:700}
+.htools{display:flex;gap:8px}
+.iconbtn{
+  background:var(--card2);border:1px solid var(--border);color:var(--text);
+  width:44px;height:44px;border-radius:12px;font-size:20px;cursor:pointer
+}
+.layout{padding:14px;display:flex;flex-direction:column}
+.c-drinks{order:1}.c-side{order:2}.c-hist{order:3}
+.c-side h2:first-child{margin-top:22px}
+
+.grid{display:grid;grid-template-columns:var(--gridcols);gap:10px}
+.drink{
+  --c:transparent;
+  position:relative;background:var(--card);border:1px solid var(--border);
+  box-shadow:inset 5px 0 0 var(--c);
+  border-radius:16px;padding:16px 12px 16px 16px;min-height:78px;cursor:pointer;
+  display:flex;flex-direction:column;justify-content:center;gap:4px;
+  transition:transform .05s
+}
+.drink:active{transform:scale(.96)}
+.drink .e{font-size:22px;line-height:1;margin-bottom:2px}
+.drink .n{font-size:16px;font-weight:600;line-height:1.2}
+.drink .p{font-size:13px;color:var(--muted)}
+.drink.on{border-color:var(--accent);background:#1e2740}
+.badge{
+  position:absolute;top:-8px;right:-8px;background:var(--accent);
+  color:#fff;min-width:26px;height:26px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;padding:0 6px
+}
+.qtyrow{display:flex;gap:6px;margin-top:8px}
+.qtyrow button{
+  flex:1;background:var(--card2);border:1px solid var(--border);
+  color:var(--text);border-radius:10px;padding:8px;font-size:18px;cursor:pointer
+}
+.empty{color:var(--muted);text-align:center;padding:40px 0;font-size:14px}
+h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase;letter-spacing:.5px}
+.h2row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 10px}
+.h2row h2{margin:0}
+.pfandbox{
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px
+}
+.pfandbox>div:first-child{flex:1 1 auto;min-width:0}
+.pfandbox .lbl{font-size:15px;font-weight:600;overflow-wrap:anywhere}
+.pfandbox .sub{font-size:12px;color:var(--muted)}
+.stepper{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+.stepper button{
+  width:44px;height:44px;border-radius:12px;border:1px solid var(--border);
+  background:var(--card2);color:var(--text);font-size:22px;cursor:pointer
+}
+.stepper .val{font-size:22px;font-weight:700;min-width:34px;text-align:center}
+.bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--card);
+  border-top:1px solid var(--border);padding:12px 16px calc(16px + env(safe-area-inset-bottom));
+  box-shadow:0 -6px 20px rgba(0,0,0,.4)
+}
+.lines{font-size:13px;color:var(--muted);display:grid;gap:2px;margin-bottom:8px}
+.lines .l{display:flex;justify-content:space-between}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.total .t{font-size:15px;font-weight:600}
+.total .v{font-size:30px;font-weight:800}
+.actions{display:flex;gap:10px}
+.btn{
+  flex:1;border:none;border-radius:14px;padding:15px;font-size:16px;
+  font-weight:700;cursor:pointer;color:#fff
+}
+.btn.pay{background:var(--accent2)}
+.btn.clear{flex:0 0 90px;background:var(--card2);color:var(--muted);border:1px solid var(--border)}
+.btn:disabled{opacity:.4}
+
+.hist{display:grid;gap:8px}
+.hitem{
+  background:transparent;border:1px solid var(--border);border-left:3px solid var(--accent2);
+  border-radius:0 12px 12px 0;padding:10px 14px
+}
+.hitem .top{display:flex;justify-content:space-between;align-items:baseline}
+.hitem .time{font-size:12px;color:var(--muted)}
+.hitem .sum{font-size:18px;font-weight:800}
+.hitem .det{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.4}
+.linkbtn{background:none;border:none;color:var(--danger);font-size:13px;cursor:pointer;padding:4px}
+.ghostbtn{background:var(--card2);border:1px solid var(--border);color:var(--text);
+  border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer}
+
+.modal{
+  position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);
+  display:none;align-items:flex-end
+}
+.modal.open{display:flex}
+.sheet{
+  background:var(--bg);width:100%;max-height:90vh;overflow:auto;
+  border-radius:22px 22px 0 0;padding:18px 16px 30px;border-top:1px solid var(--border)
+}
+.sheet h3{font-size:18px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+
+/* Einstellungs-Zeilen: srow und addrow teilen exakt dasselbe Raster */
+.srow,.addrow{
+  display:grid;gap:8px;align-items:center;
+  grid-template-columns:26px 48px minmax(0,1fr) 92px 44px;
+  grid-template-areas:
+    "drag emoji name  price del"
+    "drag color pfand pfand pfand";
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:8px;margin-bottom:8px
+}
+.srow.dragging{opacity:.5;border-color:var(--accent)}
+.srow .drag{grid-area:drag;color:var(--muted);font-size:18px;text-align:center;
+  cursor:grab;touch-action:none;user-select:none;line-height:1}
+.srow input,.addrow input{
+  background:var(--card2);border:1px solid var(--border);color:var(--text);
+  border-radius:9px;padding:11px;font-size:15px;width:100%;min-width:0
+}
+.srow input.emoji,.addrow input.emoji{grid-area:emoji;text-align:center;padding:11px 2px}
+.srow input.name,.addrow input.name{grid-area:name}
+.srow input.price,.addrow input.price{grid-area:price;text-align:right}
+.srow input.color,.addrow input.color{
+  grid-area:color;padding:2px;height:38px;cursor:pointer;background:var(--card2)
+}
+.srow .pfchk,.addrow .pfchk{grid-area:pfand;justify-content:flex-start;padding-left:2px}
+.srow .del{
+  grid-area:del;background:var(--danger);border:none;color:#fff;width:44px;height:40px;
+  border-radius:9px;font-size:18px;cursor:pointer
+}
+.addrow{background:var(--card2);margin-top:6px}
+.addrow .spacer{width:100%;height:1px}
+.addrow .spacer.drag{grid-area:drag}
+.addrow .spacer.del{grid-area:del}
+.pfchk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap}
+.pfchk input{width:20px;height:20px;accent-color:var(--accent2)}
+.addbtn{background:var(--accent);border:none;color:#fff;border-radius:12px;padding:13px;font-size:15px;font-weight:700;width:100%;cursor:pointer}
+.cfg{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin:10px 0}
+.cfg input,.cfg select{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:10px;font-size:15px;width:120px;text-align:right}
+.cfg input[type=number]{width:90px}
+.cfg .k{font-size:15px}
+.cfg .s{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
+.switch{width:52px;height:30px;flex:0 0 52px;appearance:none;background:var(--card2);
+  border:1px solid var(--border);border-radius:15px;position:relative;cursor:pointer}
+.switch:checked{background:var(--accent2);border-color:var(--accent2)}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;
+  border-radius:50%;background:var(--text);transition:left .15s}
+.switch:checked::after{left:25px;background:#fff}
+.closebtn{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:10px;width:36px;height:36px;font-size:18px;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+.stat .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.stat .v{font-size:24px;font-weight:800;margin-top:4px}
+.stat.wide{grid-column:1/3}
+.stat.hi .v{color:var(--accent2)}
+.brk{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.brk .r{display:flex;justify-content:space-between;padding:12px 14px;border-top:1px solid var(--border);font-size:15px}
+.brk .r:first-child{border-top:none}
+.brk .r .q{color:var(--muted);font-size:13px}
+.saldo{display:flex;justify-content:space-between;font-size:14px;padding:10px 2px;color:var(--muted)}
+.chartbox{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 10px 6px}
+.chartbox svg{width:100%;height:auto;display:block}
+.chartbox .cempty{color:var(--muted);font-size:13px;text-align:center;padding:26px 0}
+
+/* Verlaufsübersicht */
+.logitem{display:flex;align-items:center;gap:12px;background:var(--card);
+  border:1px solid var(--border);border-left:3px solid var(--accent2);
+  border-radius:0 12px 12px 0;padding:10px 12px;margin-bottom:8px}
+.logitem .meta{flex:1;min-width:0}
+.logitem .when{font-size:12px;color:var(--muted)}
+.logitem .what{font-size:14px;margin-top:2px;line-height:1.4;overflow-wrap:anywhere}
+.logitem .amt{font-size:17px;font-weight:800;white-space:nowrap}
+.logitem .del{background:var(--card2);border:1px solid var(--border);color:var(--danger);
+  width:40px;height:40px;flex:0 0 40px;border-radius:10px;font-size:16px;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+  background:var(--card2);border:1px solid var(--border);color:var(--text);
+  padding:12px 18px;border-radius:12px;font-size:14px;z-index:99;
+  opacity:0;pointer-events:none;transition:.2s;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------- Tablet / Desktop: Seitenspalte (genug Höhe vorhanden) ---------- */
+@media (min-width:760px) and (min-height:560px){
+  header{padding:18px 28px}
+  header h1{font-size:24px}
+  .iconbtn{width:50px;height:50px;font-size:23px}
+  body{padding-bottom:0}
+  :root{--hdr:87px}
+
+  .layout{
+    padding:22px 0 22px 28px;max-width:none;margin:0;
+    display:grid;gap:24px 28px;align-items:start;
+    grid-template-columns:minmax(0,1fr) clamp(340px,30vw,520px);
+    grid-template-areas:"drinks side" "hist side"
+  }
+  .c-drinks{grid-area:drinks}
+  .c-hist{grid-area:hist}
+  .c-side{
+    grid-area:side;position:sticky;top:var(--hdr);
+    height:calc(100vh - var(--hdr));margin:-22px 0;padding:22px 28px 22px 0;
+    display:flex;flex-direction:column;min-height:460px
+  }
+  .c-side h2:first-child{margin:0 0 10px}
+  .pfandbox{padding:18px;gap:14px;flex-wrap:wrap}
+  .pfandbox .lbl{font-size:17px}
+  .pfandbox .sub{font-size:13px}
+  .stepper{gap:10px}
+  .stepper button{width:48px;height:48px;font-size:26px;flex:0 0 48px}
+  .stepper .val{font-size:26px;min-width:36px}
+
+  .bar{
+    position:static;flex:1;margin-top:14px;
+    border:1px solid var(--border);border-radius:18px;
+    padding:22px;box-shadow:none;
+    display:flex;flex-direction:column;gap:14px
+  }
+  .lines{font-size:16px;gap:8px;margin:0;margin-top:auto;
+    padding-bottom:12px;border-bottom:1px solid var(--border)}
+  .total{margin:0;align-items:center}
+  .total .t{font-size:19px}
+  .total .v{font-size:46px}
+  .actions{gap:12px}
+  .btn{padding:20px;font-size:19px;border-radius:16px}
+  .btn.clear{flex:0 0 120px}
+
+  .grid{gap:14px}
+  .drink{min-height:112px;padding:20px 16px 20px 20px;border-radius:18px}
+  .drink .e{font-size:26px}
+  .drink .n{font-size:19px}
+  .drink .p{font-size:14px}
+  .badge{min-width:30px;height:30px;border-radius:15px;font-size:16px}
+  .qtyrow button{padding:11px;font-size:20px}
+  h2{font-size:15px}
+
+  .hist{grid-template-columns:1fr;gap:0;
+    background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+  .hitem{border:none;border-radius:0;border-top:1px solid var(--border);
+    border-left:3px solid var(--accent2);padding:12px 16px;
+    display:flex;align-items:baseline;gap:16px}
+  .hitem:first-child{border-top:none}
+  .hitem .top{order:2;flex:0 0 auto;gap:14px;align-items:baseline}
+  .hitem .det{order:1;flex:1;margin:0;font-size:14px}
+  .hitem .time{font-size:13px}
+  .hitem .sum{font-size:19px;margin-left:14px}
+
+  .modal{align-items:center;justify-content:center;padding:24px}
+  .sheet{max-width:680px;border-radius:20px;border:1px solid var(--border);max-height:85vh;padding:24px}
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .stat.wide{grid-column:1/4}
+}
+
+/* ---------- Handy quer / niedrige Fenster: kompakt, Leiste bleibt unten ---------- */
+@media (min-width:700px) and (max-height:559px){
+  header{padding:8px 16px}
+  header h1{font-size:16px}
+  .iconbtn{width:38px;height:38px;font-size:17px}
+  body{padding-bottom:150px}
+  .layout{padding:10px 16px}
+  .grid{gap:8px}
+  .drink{min-height:64px;padding:10px 10px 10px 14px}
+  .drink .e{font-size:18px;margin:0}
+  .drink .n{font-size:14px}
+  .drink .p{font-size:12px}
+  h2,.h2row{margin:12px 0 8px}
+  .pfandbox{padding:10px}
+  .stepper button{width:38px;height:38px;font-size:19px}
+  .bar{padding:8px 16px 10px;display:grid;grid-template-columns:1fr 1fr auto;
+    align-items:center;gap:10px 16px}
+  .lines{margin:0;font-size:12px}
+  .total{margin:0}
+  .total .v{font-size:24px}
+  .actions{grid-column:3}
+  .btn{padding:11px 14px;font-size:14px}
+  .btn.clear{flex:0 0 70px}
+  .sheet{max-height:96vh;padding:14px 14px 20px}
+}
+
+@media (min-width:1250px) and (min-height:560px){
+  .drink{min-height:126px}
+  .total .v{font-size:52px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🍺 Getränkestand</h1>
+  <div class="htools">
+    <button class="iconbtn" title="Verlaufsübersicht" onclick="openLog()">📜</button>
+    <button class="iconbtn" title="Kassensturz" onclick="openSturz()">📊</button>
+    <button class="iconbtn" title="Einstellungen" onclick="openSettings()">⚙️</button>
+  </div>
+</header>
+
+<div class="layout">
+  <section class="c-drinks">
+    <div id="grid" class="grid"></div>
+    <div id="noDrinks" class="empty" style="display:none">
+      Noch keine Getränke.<br>Über ⚙️ oben rechts anlegen.
+    </div>
+  </section>
+
+  <aside class="c-side">
+    <h2>Pfand zurück</h2>
+    <div class="pfandbox">
+      <div>
+        <div class="lbl">Zurückgegebene Gläser</div>
+        <div class="sub">je Glas −<span id="depLbl">1,00</span> €</div>
+      </div>
+      <div class="stepper">
+        <button onclick="changeReturn(-1)">−</button>
+        <span class="val" id="retVal">0</span>
+        <button onclick="changeReturn(1)">+</button>
+      </div>
+    </div>
+
+    <div class="bar">
+      <div class="lines">
+        <div class="l"><span>Getränke</span><span id="lDrinks">0,00 €</span></div>
+        <div class="l"><span>Pfand neu (<span id="lCount">0</span>×)</span><span id="lDep">0,00 €</span></div>
+        <div class="l"><span>Pfand zurück</span><span id="lRet">0,00 €</span></div>
+      </div>
+      <div class="total"><span class="t">Endpreis</span><span class="v" id="tTotal">0,00 €</span></div>
+      <div class="actions">
+        <button class="btn clear" onclick="resetOrder()">Reset</button>
+        <button class="btn pay" id="payBtn" onclick="checkout()">Kassieren</button>
+      </div>
+    </div>
+  </aside>
+
+  <section class="c-hist">
+    <div class="h2row">
+      <h2>Verlauf</h2>
+      <button class="ghostbtn" onclick="openLog()">Übersicht &amp; bearbeiten</button>
+    </div>
+    <div id="hist" class="hist"></div>
+    <div id="noHist" class="empty">Noch keine Abrechnungen.</div>
+  </section>
+</div>
+
+<!-- Einstellungen -->
+<div class="modal" id="settings">
+  <div class="sheet">
+    <h3>Einstellungen <button class="closebtn" onclick="closeSettings()">✕</button></h3>
+
+    <div class="cfg">
+      <span class="k">Pfand pro Getränk (€)</span>
+      <input id="depInput" type="number" step="0.5" min="0" inputmode="decimal">
+    </div>
+    <div class="cfg">
+      <div><div class="k">Kachelgröße</div><div class="s">Mindestbreite der Getränke-Kacheln</div></div>
+      <select id="tileSel" onchange="setUI('tile',+this.value)">
+        <option value="140">Klein</option>
+        <option value="170">Mittel</option>
+        <option value="210">Groß</option>
+        <option value="260">Sehr groß</option>
+      </select>
+    </div>
+    <div class="cfg">
+      <div><div class="k">Spalten</div><div class="s">Auto = so viele wie passen</div></div>
+      <select id="colSel" onchange="setUI('cols',this.value)">
+        <option value="auto">Auto</option>
+        <option value="2">2</option><option value="3">3</option><option value="4">4</option>
+        <option value="5">5</option><option value="6">6</option>
+      </select>
+    </div>
+    <div class="cfg">
+      <div><div class="k">Display anlassen</div><div class="s" id="wakeInfo">Bildschirm sperrt während der Nutzung nicht</div></div>
+      <input class="switch" id="wakeChk" type="checkbox" onchange="setUI('wake',this.checked)">
+    </div>
+    <div class="cfg" id="installRow" style="display:none">
+      <div><div class="k">App installieren</div><div class="s">Vollbild &amp; offline, wie eine native App</div></div>
+      <button class="ghostbtn" onclick="doInstall()">Installieren</button>
+    </div>
+
+    <div class="h2row"><h2>Getränke</h2>
+      <button class="ghostbtn" onclick="sortByPopularity()">Nach Beliebtheit sortieren</button>
+    </div>
+    <div class="s" style="font-size:12px;color:var(--muted);margin:-4px 0 8px">
+      Mit ⠿ ziehen, um die Reihenfolge zu ändern.
+    </div>
+    <div id="editList"></div>
+    <div class="addrow">
+      <span class="spacer drag"></span>
+      <input id="newEmoji" class="emoji" maxlength="2" placeholder="🍺">
+      <input id="newName" class="name" placeholder="Name">
+      <input id="newPrice" class="price" placeholder="Preis" type="number" step="0.1" min="0" inputmode="decimal">
+      <span class="spacer del"></span>
+      <input id="newColor" class="color" type="color" value="#3b82f6">
+      <label class="pfchk"><input id="newPfand" type="checkbox" checked> Pfand</label>
+    </div>
+    <button class="addbtn" style="margin-top:8px" onclick="addDrink()">+ Getränk hinzufügen</button>
+
+    <h2 style="margin-top:22px">Daten</h2>
+    <div class="cfg" style="display:block">
+      <div class="s">
+        Getränke, Einstellungen und Verlauf werden automatisch im Browser gespeichert
+        und beim Öffnen wieder geladen. Sicherung als Datei:
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="addbtn" style="flex:1" onclick="exportData()">⬇︎ Exportieren</button>
+        <button class="addbtn" style="flex:1;background:var(--card2);border:1px solid var(--border)" onclick="document.getElementById('impFile').click()">⬆︎ Importieren</button>
+      </div>
+      <input id="impFile" type="file" accept="application/json,.json" style="display:none" onchange="importData(this)">
+    </div>
+  </div>
+</div>
+
+<!-- Verlaufsübersicht -->
+<div class="modal" id="log">
+  <div class="sheet">
+    <h3>Verlaufsübersicht <button class="closebtn" onclick="closeLog()">✕</button></h3>
+    <div class="s" style="font-size:13px;color:var(--muted);margin-bottom:12px">
+      Einzelne Abrechnungen löschen — die Statistik wird automatisch korrigiert.
+    </div>
+    <div id="logList"></div>
+    <button class="linkbtn" style="margin-top:10px" onclick="clearHistory()">Kompletten Verlauf löschen</button>
+  </div>
+</div>
+
+<!-- Kassensturz -->
+<div class="modal" id="sturz">
+  <div class="sheet">
+    <h3>Kassensturz <button class="closebtn" onclick="closeSturz()">✕</button></h3>
+    <div class="stats" id="statCards"></div>
+    <h2>Umsatz im Zeitverlauf</h2>
+    <div class="chartbox" id="chart"></div>
+    <h2>Ausgabe pro Getränk</h2>
+    <div class="brk" id="brk"></div>
+    <div class="saldo">
+      <span>Pfand ausgegeben / zurück</span>
+      <span id="pfBal"></span>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const LS='gstand_v2';
+const DEF_UI={tile:170,cols:'auto',wake:false};
+let state={deposit:1,drinks:[],history:[],ui:{...DEF_UI}};
+let order={}, ret=0;
+
+/* ---------- Persistenz ---------- */
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(LS));if(s)state={deposit:1,drinks:[],history:[],ui:{...DEF_UI},...s};}catch(e){}
+  state.ui={...DEF_UI,...(state.ui||{})};
+  if(!state.drinks.length){
+    state.drinks=[
+      {id:id(),name:'Bier',price:3,pfand:true,emoji:'🍺',color:'#f59e0b'},
+      {id:id(),name:'Softdrink',price:2,pfand:true,emoji:'🥤',color:'#3b82f6'},
+      {id:id(),name:'Wasser',price:1.5,pfand:true,emoji:'💧',color:'#38bdf8'},
+      {id:id(),name:'Schnaps',price:2,pfand:false,emoji:'🥃',color:'#a855f7'},
+    ];
+  }
+  state.drinks.forEach(d=>{
+    if(d.pfand===undefined)d.pfand=true;
+    if(d.emoji===undefined)d.emoji='';
+    if(d.color===undefined)d.color='';
+  });
+  save();
+}
+function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){toast('Speichern fehlgeschlagen');}}
+function id(){return Math.random().toString(36).slice(2,9);}
+function eur(n){return n.toFixed(2).replace('.',',')+' €';}
+function esc(s){return(''+s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+  clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('show'),2200);}
+
+/* ---------- UI-Einstellungen ---------- */
+function applyUI(){
+  const r=document.documentElement.style;
+  r.setProperty('--tile',state.ui.tile+'px');
+  r.setProperty('--gridcols', state.ui.cols==='auto'
+    ? 'repeat(auto-fill,minmax(var(--tile),1fr))'
+    : 'repeat('+state.ui.cols+',minmax(0,1fr))');
+  const t=document.getElementById('tileSel'), c=document.getElementById('colSel'), w=document.getElementById('wakeChk');
+  if(t)t.value=state.ui.tile; if(c)c.value=state.ui.cols; if(w)w.checked=!!state.ui.wake;
+}
+function setUI(k,v){state.ui[k]=v;save();applyUI();if(k==='wake')syncWake();}
+
+/* ---------- Getränke-Grid ---------- */
+function renderGrid(){
+  const g=document.getElementById('grid');g.innerHTML='';
+  document.getElementById('noDrinks').style.display=state.drinks.length?'none':'block';
+  state.drinks.forEach(d=>{
+    const q=order[d.id]||0;
+    const el=document.createElement('div');
+    el.className='drink'+(q?' on':'');
+    if(d.color)el.style.setProperty('--c',d.color);
+    el.onclick=()=>{order[d.id]=(order[d.id]||0)+1;renderGrid();renderTotals();};
+    el.innerHTML=`
+      ${q?`<span class="badge">${q}</span>`:''}
+      ${d.emoji?`<div class="e">${esc(d.emoji)}</div>`:''}
+      <div class="n">${esc(d.name)}</div>
+      <div class="p">${eur(d.price)}${d.pfand?' + Pfand':' · ohne Pfand'}</div>
+      ${q?`<div class="qtyrow">
+        <button onclick="event.stopPropagation();dec('${d.id}')">−</button>
+        <button onclick="event.stopPropagation();inc('${d.id}')">+</button>
+      </div>`:''}`;
+    g.appendChild(el);
+  });
+}
+function inc(i){order[i]=(order[i]||0)+1;renderGrid();renderTotals();}
+function dec(i){order[i]=Math.max(0,(order[i]||0)-1);if(!order[i])delete order[i];renderGrid();renderTotals();}
+function changeReturn(d){ret=Math.max(0,ret+d);document.getElementById('retVal').textContent=ret;renderTotals();}
+
+function calc(){
+  let drinksSum=0,count=0,depCount=0;
+  state.drinks.forEach(d=>{const q=order[d.id]||0;drinksSum+=q*d.price;count+=q;if(d.pfand)depCount+=q;});
+  const depNew=depCount*state.deposit;
+  const depRet=ret*state.deposit;
+  return {drinksSum,count,depCount,depNew,depRet,total:drinksSum+depNew-depRet};
+}
+function renderTotals(){
+  const c=calc();
+  document.getElementById('lDrinks').textContent=eur(c.drinksSum);
+  document.getElementById('lCount').textContent=c.depCount;
+  document.getElementById('lDep').textContent=eur(c.depNew);
+  document.getElementById('lRet').textContent='−'+eur(c.depRet);
+  document.getElementById('tTotal').textContent=eur(c.total);
+  document.getElementById('payBtn').disabled=(c.count===0&&ret===0);
+  document.getElementById('depLbl').textContent=state.deposit.toFixed(2).replace('.',',');
+}
+
+/* ---------- Kassieren / Verlauf ---------- */
+function checkout(){
+  const c=calc();
+  if(c.count===0&&ret===0)return;
+  const lines=state.drinks.filter(d=>order[d.id]).map(d=>({name:d.name,qty:order[d.id],price:d.price}));
+  state.history.unshift({
+    hid:id(),t:Date.now(),lines,count:c.count,depCount:c.depCount,ret,
+    drinksSum:c.drinksSum,depNew:c.depNew,depRet:c.depRet,total:c.total
+  });
+  save();resetOrder();renderHistory();
+}
+function resetOrder(){order={};ret=0;document.getElementById('retVal').textContent=0;renderGrid();renderTotals();}
+function histLine(x){return x.lines.map(l=>`${l.qty}× ${l.name}`);}
+function renderHistory(){
+  const h=document.getElementById('hist');h.innerHTML='';
+  document.getElementById('noHist').style.display=state.history.length?'none':'block';
+  state.history.slice(0,20).forEach(x=>{
+    const time=new Date(x.t).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    const items=histLine(x);
+    const el=document.createElement('div');el.className='hitem';
+    el.innerHTML=`
+      <div class="top"><span class="time">${time}</span><span class="sum">${eur(x.total)}</span></div>
+      <div class="det">${items.length?esc(items.join(' · ')):'—'}
+      <br>Pfand neu ${x.depCount}× ${eur(x.depNew)} · zurück ${x.ret}× −${eur(x.depRet)}</div>`;
+    h.appendChild(el);
+  });
+}
+function clearHistory(){if(confirm('Kompletten Verlauf und die Statistik wirklich löschen?')){
+  state.history=[];save();renderHistory();renderLog();renderSturz();toast('Verlauf gelöscht');}}
+
+/* ---------- Verlaufsübersicht (einzeln löschen) ---------- */
+function openLog(){renderLog();document.getElementById('log').classList.add('open');}
+function closeLog(){document.getElementById('log').classList.remove('open');}
+function renderLog(){
+  const l=document.getElementById('logList');
+  if(!state.history.length){l.innerHTML='<div class="empty">Noch keine Abrechnungen.</div>';return;}
+  l.innerHTML='';
+  state.history.forEach(x=>{
+    const dt=new Date(x.t).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const items=histLine(x);
+    const el=document.createElement('div');el.className='logitem';
+    el.innerHTML=`
+      <div class="meta">
+        <div class="when">${dt} Uhr</div>
+        <div class="what">${items.length?esc(items.join(' · ')):'—'}${x.ret?` · ${x.ret} Glas zurück`:''}</div>
+      </div>
+      <div class="amt">${eur(x.total)}</div>
+      <button class="del" title="Löschen">🗑</button>`;
+    el.querySelector('.del').onclick=()=>delEntry(x.hid,dt,x.total);
+    l.appendChild(el);
+  });
+}
+function delEntry(hid,dt,total){
+  if(!confirm(`Abrechnung vom ${dt} Uhr über ${eur(total)} wirklich löschen?\n\nDie Statistik wird entsprechend korrigiert.`))return;
+  state.history=state.history.filter(x=>x.hid!==hid);
+  save();renderLog();renderHistory();renderSturz();toast('Abrechnung gelöscht');
+}
+
+/* ---------- Einstellungen ---------- */
+function openSettings(){document.getElementById('settings').classList.add('open');
+  document.getElementById('depInput').value=state.deposit;applyUI();renderEdit();}
+function closeSettings(){document.getElementById('settings').classList.remove('open');}
+function renderEdit(){
+  const l=document.getElementById('editList');l.innerHTML='';
+  state.drinks.forEach(d=>{
+    const r=document.createElement('div');r.className='srow';r.dataset.id=d.id;
+    r.innerHTML=`
+      <span class="drag" title="Ziehen zum Sortieren">⠿</span>
+      <input class="emoji" maxlength="2" value="${esc(d.emoji||'')}" placeholder="🙂" onchange="editDrink('${d.id}','emoji',this.value)">
+      <input class="name" value="${esc(d.name)}" onchange="editDrink('${d.id}','name',this.value)">
+      <input class="price" type="number" step="0.1" min="0" inputmode="decimal" value="${d.price}" onchange="editDrink('${d.id}','price',this.value)">
+      <button class="del" onclick="delDrink('${d.id}')">🗑</button>
+      <input class="color" type="color" value="${d.color||'#2d323d'}" oninput="editDrink('${d.id}','color',this.value)">
+      <label class="pfchk"><input type="checkbox" ${d.pfand?'checked':''} onchange="editDrink('${d.id}','pfand',this.checked)"> Pfand</label>`;
+    r.querySelector('.drag').addEventListener('pointerdown',e=>startDrag(e,r));
+    l.appendChild(r);
+  });
+}
+function editDrink(i,k,v){
+  const d=state.drinks.find(x=>x.id===i);if(!d)return;
+  if(k==='price')v=parseFloat((''+v).replace(',','.'))||0;
+  d[k]=v;save();renderGrid();renderTotals();
+}
+function delDrink(i){
+  const d=state.drinks.find(x=>x.id===i);
+  if(!confirm(`„${d?d.name:''}" wirklich löschen?`))return;
+  state.drinks=state.drinks.filter(x=>x.id!==i);delete order[i];
+  save();renderEdit();renderGrid();renderTotals();
+}
+function addDrink(){
+  const n=document.getElementById('newName').value.trim();
+  const p=parseFloat(document.getElementById('newPrice').value.replace(',','.'));
+  const pf=document.getElementById('newPfand').checked;
+  const em=document.getElementById('newEmoji').value.trim();
+  const co=document.getElementById('newColor').value;
+  if(!n||isNaN(p)){toast('Name und Preis angeben');return;}
+  state.drinks.push({id:id(),name:n,price:p,pfand:pf,emoji:em,color:co});
+  document.getElementById('newName').value='';document.getElementById('newPrice').value='';
+  document.getElementById('newEmoji').value='';document.getElementById('newPfand').checked=true;
+  save();renderEdit();renderGrid();
+}
+function sortByPopularity(){
+  const per={};
+  state.history.forEach(x=>x.lines.forEach(l=>{per[l.name]=(per[l.name]||0)+l.qty;}));
+  state.drinks.sort((a,b)=>(per[b.name]||0)-(per[a.name]||0));
+  save();renderEdit();renderGrid();toast('Nach Verkaufshäufigkeit sortiert');
+}
+document.getElementById('depInput').addEventListener('change',e=>{
+  state.deposit=parseFloat(e.target.value.replace(',','.'))||0;save();renderTotals();
+});
+document.getElementById('settings').addEventListener('click',e=>{if(e.target.id==='settings')closeSettings();});
+document.getElementById('log').addEventListener('click',e=>{if(e.target.id==='log')closeLog();});
+
+/* ---------- Drag & Drop (Maus + Touch) ---------- */
+let dragRow=null;
+function startDrag(e,row){
+  dragRow=row;row.classList.add('dragging');
+  e.target.setPointerCapture(e.pointerId);
+  e.target.addEventListener('pointermove',onDrag);
+  e.target.addEventListener('pointerup',endDrag,{once:true});
+  e.target.addEventListener('pointercancel',endDrag,{once:true});
+  e.preventDefault();
+}
+function onDrag(e){
+  if(!dragRow)return;
+  const el=document.elementFromPoint(e.clientX,e.clientY);
+  const t=el&&el.closest('.srow');
+  if(!t||t===dragRow||t.parentNode!==dragRow.parentNode)return;
+  const r=t.getBoundingClientRect();
+  const before=e.clientY < r.top+r.height/2;
+  t.parentNode.insertBefore(dragRow, before?t:t.nextSibling);
+}
+function endDrag(e){
+  if(!dragRow)return;
+  dragRow.classList.remove('dragging');
+  e.target.removeEventListener('pointermove',onDrag);
+  dragRow=null;
+  const ids=[...document.querySelectorAll('#editList .srow')].map(r=>r.dataset.id);
+  state.drinks.sort((a,b)=>ids.indexOf(a.id)-ids.indexOf(b.id));
+  save();renderGrid();
+}
+
+/* ---------- Kassensturz ---------- */
+function openSturz(){renderSturz();document.getElementById('sturz').classList.add('open');}
+function closeSturz(){document.getElementById('sturz').classList.remove('open');}
+document.getElementById('sturz').addEventListener('click',e=>{if(e.target.id==='sturz')closeSturz();});
+function renderSturz(){
+  const h=state.history;
+  let umsatz=0,drinksSum=0,depNew=0,depRet=0,drinkCount=0;
+  const per={};
+  h.forEach(x=>{
+    umsatz+=x.total;drinksSum+=x.drinksSum;depNew+=x.depNew;depRet+=x.depRet;drinkCount+=x.count;
+    x.lines.forEach(l=>{
+      if(!per[l.name])per[l.name]={qty:0,rev:0};
+      per[l.name].qty+=l.qty;per[l.name].rev+=l.qty*l.price;
+    });
+  });
+  document.getElementById('statCards').innerHTML=`
+    <div class="stat wide hi"><div class="k">Umsatz gesamt</div><div class="v">${eur(umsatz)}</div></div>
+    <div class="stat"><div class="k">Abrechnungen</div><div class="v">${h.length}</div></div>
+    <div class="stat"><div class="k">Getränke ausgegeben</div><div class="v">${drinkCount}</div></div>
+    <div class="stat"><div class="k">nur Getränke</div><div class="v">${eur(drinksSum)}</div></div>
+    <div class="stat"><div class="k">Pfand-Saldo</div><div class="v">${eur(depNew-depRet)}</div></div>`;
+  const names=Object.keys(per).sort((a,b)=>per[b].qty-per[a].qty);
+  const brk=document.getElementById('brk');
+  brk.innerHTML=names.length?names.map(n=>`
+    <div class="r"><span>${esc(n)} <span class="q">×${per[n].qty}</span></span><span>${eur(per[n].rev)}</span></div>`).join('')
+    :'<div class="r"><span class="q">Noch keine Daten</span><span></span></div>';
+  document.getElementById('pfBal').textContent=`${eur(depNew)} / −${eur(depRet)}`;
+  renderChart();
+}
+function renderChart(){
+  const box=document.getElementById('chart');
+  if(!state.history.length){box.innerHTML='<div class="cempty">Noch keine Daten für den Zeitverlauf.</div>';return;}
+  // Umsatz je Stunde bündeln
+  const b={};
+  state.history.forEach(x=>{
+    const d=new Date(x.t);d.setMinutes(0,0,0);
+    const k=d.getTime();
+    if(!b[k])b[k]={sum:0,cnt:0};
+    b[k].sum+=x.total;b[k].cnt+=x.count;
+  });
+  let keys=Object.keys(b).map(Number).sort((a,b2)=>a-b2);
+  // Lücken innerhalb des Zeitraums auffüllen, max. 14 Balken (letzte)
+  const full=[];
+  for(let t=keys[0];t<=keys[keys.length-1];t+=3600000)full.push(t);
+  const shown=full.slice(-14);
+  const max=Math.max(...shown.map(t=>(b[t]?b[t].sum:0)),1);
+
+  const W=640,H=200,PL=44,PR=8,PT=12,PB=26;
+  const iw=W-PL-PR, ih=H-PT-PB;
+  const bw=iw/shown.length;
+  const grid=[0,.5,1].map(f=>{
+    const y=PT+ih-ih*f;
+    return `<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="var(--border)" stroke-width="1"/>
+      <text x="${PL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="var(--muted)">${eur(max*f).replace(' €','')}</text>`;
+  }).join('');
+  const bars=shown.map((t,i)=>{
+    const v=b[t]?b[t].sum:0;
+    const bh=Math.round(ih*(v/max));
+    const x=PL+i*bw+bw*0.15, w=bw*0.7, y=PT+ih-bh;
+    const lbl=new Date(t).getHours().toString().padStart(2,'0');
+    const label=(shown.length<=8||i%2===0)
+      ? `<text x="${x+w/2}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--muted)">${lbl}</text>`:'';
+    return `<g><rect x="${x}" y="${y}" width="${w}" height="${Math.max(bh,v>0?2:0)}" rx="3" fill="var(--accent2)" opacity="${v?1:.15}">
+      <title>${lbl}:00 Uhr — ${eur(v)}${b[t]?` · ${b[t].cnt} Getränke`:''}</title></rect>${label}</g>`;
+  }).join('');
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Umsatz pro Stunde">
+    ${grid}${bars}
+    <text x="${PL}" y="${H-8}" font-size="10" fill="var(--muted)" opacity="0">.</text>
+  </svg>
+  <div style="text-align:center;font-size:11px;color:var(--muted);padding:2px 0 6px">Umsatz je Stunde (€)</div>`;
+}
+
+/* ---------- Export / Import ---------- */
+function exportData(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='getraenkestand-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();URL.revokeObjectURL(a.href);
+}
+function importData(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!d||!Array.isArray(d.drinks))throw 0;
+      state={deposit:1,drinks:[],history:[],ui:{...DEF_UI},...d};
+      state.ui={...DEF_UI,...(state.ui||{})};
+      state.drinks.forEach(x=>{if(x.pfand===undefined)x.pfand=true;if(!x.id)x.id=id();});
+      state.history.forEach(x=>{if(!x.hid)x.hid=id();});
+      save();resetOrder();applyUI();renderEdit();renderHistory();
+      document.getElementById('depInput').value=state.deposit;
+      toast('Daten importiert');
+    }catch(e){alert('Datei konnte nicht gelesen werden.');}
+    inp.value='';
+  };
+  r.readAsText(f);
+}
+
+/* ---------- Wake Lock ---------- */
+let wl=null;
+async function syncWake(){
+  const info=document.getElementById('wakeInfo');
+  if(!('wakeLock' in navigator)){
+    info.textContent='Von diesem Browser nicht unterstützt';
+    document.getElementById('wakeChk').disabled=true;return;
+  }
+  if(state.ui.wake && !wl && document.visibilityState==='visible'){
+    try{wl=await navigator.wakeLock.request('screen');
+      wl.addEventListener('release',()=>{wl=null;});
+      info.textContent='Aktiv – Bildschirm bleibt an';
+    }catch(e){info.textContent='Konnte nicht aktiviert werden ('+e.name+')';}
+  }else if(!state.ui.wake && wl){
+    try{await wl.release();}catch(e){}
+    wl=null;info.textContent='Bildschirm sperrt während der Nutzung nicht';
+  }
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncWake();});
+
+/* ---------- PWA ---------- */
+let installPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();installPrompt=e;
+  document.getElementById('installRow').style.display='flex';
+});
+function doInstall(){
+  if(!installPrompt)return;
+  installPrompt.prompt();
+  installPrompt.userChoice.finally(()=>{installPrompt=null;
+    document.getElementById('installRow').style.display='none';});
+}
+window.addEventListener('appinstalled',()=>toast('App installiert'));
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+
+/* ---------- Start ---------- */
+load();applyUI();renderGrid();renderTotals();renderHistory();syncWake();
+</script>
+</body>
+</html>
