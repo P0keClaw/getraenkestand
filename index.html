@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Getränkestand Kasse</title>
+<title>Standkasse</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0f1115">
 <meta name="mobile-web-app-capable" content="yes">
@@ -37,6 +37,19 @@ header h1{font-size:18px;font-weight:700}
 .layout{padding:14px;display:flex;flex-direction:column}
 .c-drinks{order:1}.c-side{order:2}.c-hist{order:3}
 .c-side h2:first-child{margin-top:22px}
+
+/* Kategorie-Tabs */
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:2px;
+  scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  --c:var(--muted);
+  flex:0 0 auto;background:var(--card);border:1px solid var(--border);
+  color:var(--muted);border-radius:999px;padding:9px 14px;font-size:14px;
+  font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap
+}
+.tab .dot{width:9px;height:9px;border-radius:50%;background:var(--c)}
+.tab.on{color:var(--text);border-color:var(--c);background:var(--card2)}
 
 .grid{display:grid;grid-template-columns:var(--gridcols);gap:10px}
 .drink{
@@ -126,26 +139,29 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
 /* Einstellungs-Zeilen: srow und addrow teilen exakt dasselbe Raster */
 .srow,.addrow{
   display:grid;gap:8px;align-items:center;
-  grid-template-columns:26px 48px minmax(0,1fr) 92px 44px;
+  grid-template-columns:34px 48px minmax(0,1fr) 92px 44px;
   grid-template-areas:
     "drag emoji name  price del"
-    "drag color pfand pfand pfand";
+    "drag cat   cat   pfand pfand";
   background:var(--card);border:1px solid var(--border);border-radius:12px;
   padding:8px;margin-bottom:8px
 }
-.srow.dragging{opacity:.5;border-color:var(--accent)}
-.srow .drag{grid-area:drag;color:var(--muted);font-size:18px;text-align:center;
-  cursor:grab;touch-action:none;user-select:none;line-height:1}
-.srow input,.addrow input{
+.srow.dragging,.crow.dragging{opacity:.45;border-color:var(--accent);border-style:dashed}
+.dragcell{grid-area:drag;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.dragcell .mv{background:none;border:none;color:var(--muted);font-size:10px;line-height:1;
+  cursor:pointer;padding:5px 6px}
+.dragcell .mv:disabled{opacity:.25;cursor:default}
+.drag{color:var(--muted);font-size:17px;text-align:center;cursor:grab;
+  touch-action:none;user-select:none;-webkit-user-select:none;line-height:1;padding:3px 6px}
+.drag:active{cursor:grabbing}
+body.nosel{user-select:none;-webkit-user-select:none}
+.srow input,.addrow input,.srow select,.addrow select{
   background:var(--card2);border:1px solid var(--border);color:var(--text);
   border-radius:9px;padding:11px;font-size:15px;width:100%;min-width:0
 }
-.srow input.emoji,.addrow input.emoji{grid-area:emoji;text-align:center;padding:11px 2px}
-.srow input.name,.addrow input.name{grid-area:name}
-.srow input.price,.addrow input.price{grid-area:price;text-align:right}
-.srow input.color,.addrow input.color{
-  grid-area:color;padding:2px;height:38px;cursor:pointer;background:var(--card2)
-}
+.srow .name,.addrow .name{grid-area:name}
+.srow .price,.addrow .price{grid-area:price;text-align:right}
+.srow select.cat,.addrow select.cat{grid-area:cat;padding:9px 8px;font-size:14px}
 .srow .pfchk,.addrow .pfchk{grid-area:pfand;justify-content:flex-start;padding-left:2px}
 .srow .del{
   grid-area:del;background:var(--danger);border:none;color:#fff;width:44px;height:40px;
@@ -153,8 +169,16 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
 }
 .addrow{background:var(--card2);margin-top:6px}
 .addrow .spacer{width:100%;height:1px}
-.addrow .spacer.drag{grid-area:drag}
-.addrow .spacer.del{grid-area:del}
+.addrow .spacer{grid-area:drag}
+
+/* Emoji-Auswahlbutton */
+.emojibtn{
+  grid-area:emoji;background:var(--card2);border:1px solid var(--border);color:var(--text);
+  border-radius:9px;height:42px;font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;padding:0
+}
+.emojibtn.none{color:var(--muted);font-size:15px}
+
 .pfchk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap}
 .pfchk input{width:20px;height:20px;accent-color:var(--accent2)}
 .addbtn{background:var(--accent);border:none;color:#fff;border-radius:12px;padding:13px;font-size:15px;font-weight:700;width:100%;cursor:pointer}
@@ -170,6 +194,23 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
   border-radius:50%;background:var(--text);transition:left .15s}
 .switch:checked::after{left:25px;background:#fff}
 .closebtn{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:10px;width:36px;height:36px;font-size:18px;cursor:pointer}
+
+/* Kategorien-Editor */
+.crow{
+  display:grid;gap:8px;align-items:center;
+  grid-template-columns:34px 14px 48px minmax(0,1fr) 44px;
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:8px;margin-bottom:8px
+}
+.crow .dragcell{grid-area:auto}
+.crow .cdot{width:14px;height:14px;border-radius:50%}
+.crow .emojibtn{grid-area:auto}
+.crow input{background:var(--card2);border:1px solid var(--border);color:var(--text);
+  border-radius:9px;padding:11px;font-size:15px;width:100%;min-width:0}
+.crow .del{background:var(--danger);border:none;color:#fff;width:44px;height:40px;
+  border-radius:9px;font-size:18px;cursor:pointer}
+.caddrow{grid-template-columns:34px 14px 48px minmax(0,1fr) 44px;background:var(--card2)}
+
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
 .stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
 .stat .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
@@ -177,13 +218,23 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
 .stat.wide{grid-column:1/3}
 .stat.hi .v{color:var(--accent2)}
 .brk{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
-.brk .r{display:flex;justify-content:space-between;padding:12px 14px;border-top:1px solid var(--border);font-size:15px}
+.brk .r{display:flex;justify-content:space-between;padding:12px 14px;border-top:1px solid var(--border);font-size:15px;gap:10px}
 .brk .r:first-child{border-top:none}
 .brk .r .q{color:var(--muted);font-size:13px}
+.brk .r .cdot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:7px}
 .saldo{display:flex;justify-content:space-between;font-size:14px;padding:10px 2px;color:var(--muted)}
 .chartbox{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 10px 6px}
 .chartbox svg{width:100%;height:auto;display:block}
 .chartbox .cempty{color:var(--muted);font-size:13px;text-align:center;padding:26px 0}
+
+/* Emoji-Picker */
+.epick .sheet{max-width:520px}
+.egroup{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px}
+.egroup:first-of-type{margin-top:4px}
+.egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
+.egrid button{background:var(--card);border:1px solid var(--border);border-radius:10px;
+  height:44px;font-size:22px;cursor:pointer;color:var(--text)}
+.egrid button:active{background:var(--card2)}
 
 /* Verlaufsübersicht */
 .logitem{display:flex;align-items:center;gap:12px;background:var(--card);
@@ -201,7 +252,7 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
   opacity:0;pointer-events:none;transition:.2s;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ---------- Tablet / Desktop: Seitenspalte (genug Höhe vorhanden) ---------- */
+/* ---------- Tablet / Desktop: Seitenspalte ---------- */
 @media (min-width:760px) and (min-height:560px){
   header{padding:18px 28px}
   header h1{font-size:24px}
@@ -253,6 +304,7 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
   .badge{min-width:30px;height:30px;border-radius:15px;font-size:16px}
   .qtyrow button{padding:11px;font-size:20px}
   h2{font-size:15px}
+  .tab{font-size:15px;padding:10px 16px}
 
   .hist{grid-template-columns:1fr;gap:0;
     background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
@@ -271,7 +323,7 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
   .stat.wide{grid-column:1/4}
 }
 
-/* ---------- Handy quer / niedrige Fenster: kompakt, Leiste bleibt unten ---------- */
+/* ---------- Handy quer / niedrige Fenster ---------- */
 @media (min-width:700px) and (max-height:559px){
   header{padding:8px 16px}
   header h1{font-size:16px}
@@ -284,6 +336,7 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
   .drink .n{font-size:14px}
   .drink .p{font-size:12px}
   h2,.h2row{margin:12px 0 8px}
+  .tab{padding:7px 12px;font-size:13px}
   .pfandbox{padding:10px}
   .stepper button{width:38px;height:38px;font-size:19px}
   .bar{padding:8px 16px 10px;display:grid;grid-template-columns:1fr 1fr auto;
@@ -305,7 +358,7 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
 </head>
 <body>
 <header>
-  <h1>🍺 Getränkestand</h1>
+  <h1>🍻 Standkasse</h1>
   <div class="htools">
     <button class="iconbtn" title="Verlaufsübersicht" onclick="openLog()">📜</button>
     <button class="iconbtn" title="Kassensturz" onclick="openSturz()">📊</button>
@@ -315,9 +368,10 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
 
 <div class="layout">
   <section class="c-drinks">
+    <div id="tabs" class="tabs"></div>
     <div id="grid" class="grid"></div>
     <div id="noDrinks" class="empty" style="display:none">
-      Noch keine Getränke.<br>Über ⚙️ oben rechts anlegen.
+      Noch keine Artikel.<br>Über ⚙️ oben rechts anlegen.
     </div>
   </section>
 
@@ -325,8 +379,8 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
     <h2>Pfand zurück</h2>
     <div class="pfandbox">
       <div>
-        <div class="lbl">Zurückgegebene Gläser</div>
-        <div class="sub">je Glas −<span id="depLbl">1,00</span> €</div>
+        <div class="lbl">Zurückgegebener Pfand</div>
+        <div class="sub">je Einheit −<span id="depLbl">1,00</span> €</div>
       </div>
       <div class="stepper">
         <button onclick="changeReturn(-1)">−</button>
@@ -337,7 +391,7 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
 
     <div class="bar">
       <div class="lines">
-        <div class="l"><span>Getränke</span><span id="lDrinks">0,00 €</span></div>
+        <div class="l"><span>Artikel</span><span id="lDrinks">0,00 €</span></div>
         <div class="l"><span>Pfand neu (<span id="lCount">0</span>×)</span><span id="lDep">0,00 €</span></div>
         <div class="l"><span>Pfand zurück</span><span id="lRet">0,00 €</span></div>
       </div>
@@ -365,11 +419,11 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
     <h3>Einstellungen <button class="closebtn" onclick="closeSettings()">✕</button></h3>
 
     <div class="cfg">
-      <span class="k">Pfand pro Getränk (€)</span>
+      <span class="k">Pfand pro Einheit (€)</span>
       <input id="depInput" type="number" step="0.5" min="0" inputmode="decimal">
     </div>
     <div class="cfg">
-      <div><div class="k">Kachelgröße</div><div class="s">Mindestbreite der Getränke-Kacheln</div></div>
+      <div><div class="k">Kachelgröße</div><div class="s">Mindestbreite der Artikel-Kacheln</div></div>
       <select id="tileSel" onchange="setUI('tile',+this.value)">
         <option value="140">Klein</option>
         <option value="170">Mittel</option>
@@ -394,28 +448,41 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
       <button class="ghostbtn" onclick="doInstall()">Installieren</button>
     </div>
 
-    <div class="h2row"><h2>Getränke</h2>
+    <h2 style="margin-top:22px">Kategorien</h2>
+    <div class="s" style="font-size:12px;color:var(--muted);margin:-4px 0 8px">
+      Die Farbe wird automatisch aus der Reihenfolge vergeben. Sortieren: ⠿ ziehen oder ▲▼ tippen.
+    </div>
+    <div id="catList"></div>
+    <div class="crow caddrow">
+      <span></span>
+      <span class="cdot" id="newCatDot"></span>
+      <button class="emojibtn none" id="newCatEmoji" onclick="pickEmoji(v=>setBtnEmoji('newCatEmoji',v))">＋</button>
+      <input id="newCatName" placeholder="Name der Kategorie">
+      <span></span>
+    </div>
+    <button class="addbtn" style="margin-top:8px;background:var(--card2);border:1px solid var(--border)" onclick="addCat()">+ Kategorie hinzufügen</button>
+
+    <div class="h2row"><h2>Artikel</h2>
       <button class="ghostbtn" onclick="sortByPopularity()">Nach Beliebtheit sortieren</button>
     </div>
     <div class="s" style="font-size:12px;color:var(--muted);margin:-4px 0 8px">
-      Mit ⠿ ziehen, um die Reihenfolge zu ändern.
+      Sortieren: ⠿ ziehen oder ▲▼ tippen.
     </div>
     <div id="editList"></div>
     <div class="addrow">
-      <span class="spacer drag"></span>
-      <input id="newEmoji" class="emoji" maxlength="2" placeholder="🍺">
+      <span class="spacer"></span>
+      <button class="emojibtn none" id="newEmoji" onclick="pickEmoji(v=>setBtnEmoji('newEmoji',v))">＋</button>
       <input id="newName" class="name" placeholder="Name">
       <input id="newPrice" class="price" placeholder="Preis" type="number" step="0.1" min="0" inputmode="decimal">
-      <span class="spacer del"></span>
-      <input id="newColor" class="color" type="color" value="#3b82f6">
+      <select id="newCat" class="cat"></select>
       <label class="pfchk"><input id="newPfand" type="checkbox" checked> Pfand</label>
     </div>
-    <button class="addbtn" style="margin-top:8px" onclick="addDrink()">+ Getränk hinzufügen</button>
+    <button class="addbtn" style="margin-top:8px" onclick="addDrink()">+ Artikel hinzufügen</button>
 
     <h2 style="margin-top:22px">Daten</h2>
     <div class="cfg" style="display:block">
       <div class="s">
-        Getränke, Einstellungen und Verlauf werden automatisch im Browser gespeichert
+        Artikel, Kategorien, Einstellungen und Verlauf werden automatisch im Browser gespeichert
         und beim Öffnen wieder geladen. Sicherung als Datei:
       </div>
       <div style="display:flex;gap:8px;margin-top:10px">
@@ -424,6 +491,15 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
       </div>
       <input id="impFile" type="file" accept="application/json,.json" style="display:none" onchange="importData(this)">
     </div>
+  </div>
+</div>
+
+<!-- Emoji-Picker -->
+<div class="modal epick" id="epick">
+  <div class="sheet">
+    <h3>Icon auswählen <button class="closebtn" onclick="closeEmoji()">✕</button></h3>
+    <button class="ghostbtn" style="width:100%;padding:11px;margin-bottom:6px" onclick="chooseEmoji('')">Kein Icon</button>
+    <div id="epickBody"></div>
   </div>
 </div>
 
@@ -446,7 +522,9 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
     <div class="stats" id="statCards"></div>
     <h2>Umsatz im Zeitverlauf</h2>
     <div class="chartbox" id="chart"></div>
-    <h2>Ausgabe pro Getränk</h2>
+    <h2>Umsatz pro Kategorie</h2>
+    <div class="brk" id="brkCat"></div>
+    <h2>Ausgabe pro Artikel</h2>
     <div class="brk" id="brk"></div>
     <div class="saldo">
       <span>Pfand ausgegeben / zurück</span>
@@ -458,36 +536,53 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
 <div class="toast" id="toast"></div>
 
 <script>
-const LS='gstand_v2';
-const DEF_UI={tile:170,cols:'auto',wake:false};
-let state={deposit:1,drinks:[],history:[],ui:{...DEF_UI}};
+const LS='gstand_v3', LS_OLD='gstand_v2';
+const DEF_UI={tile:170,cols:'auto',wake:false,filter:'all'};
+const CAT_COLORS=['#f59e0b','#3b82f6','#22c55e','#a855f7','#ef4444','#06b6d4','#ec4899','#84cc16'];
+let state={deposit:1,cats:[],drinks:[],history:[],ui:{...DEF_UI}};
 let order={}, ret=0;
 
-/* ---------- Persistenz ---------- */
-function load(){
-  try{const s=JSON.parse(localStorage.getItem(LS));if(s)state={deposit:1,drinks:[],history:[],ui:{...DEF_UI},...s};}catch(e){}
-  state.ui={...DEF_UI,...(state.ui||{})};
-  if(!state.drinks.length){
-    state.drinks=[
-      {id:id(),name:'Bier',price:3,pfand:true,emoji:'🍺',color:'#f59e0b'},
-      {id:id(),name:'Softdrink',price:2,pfand:true,emoji:'🥤',color:'#3b82f6'},
-      {id:id(),name:'Wasser',price:1.5,pfand:true,emoji:'💧',color:'#38bdf8'},
-      {id:id(),name:'Schnaps',price:2,pfand:false,emoji:'🥃',color:'#a855f7'},
-    ];
-  }
-  state.drinks.forEach(d=>{
-    if(d.pfand===undefined)d.pfand=true;
-    if(d.emoji===undefined)d.emoji='';
-    if(d.color===undefined)d.color='';
-  });
-  save();
-}
-function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){toast('Speichern fehlgeschlagen');}}
 function id(){return Math.random().toString(36).slice(2,9);}
 function eur(n){return n.toFixed(2).replace('.',',')+' €';}
 function esc(s){return(''+s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
   clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('show'),2200);}
+
+/* ---------- Farben je Kategorie (automatisch) ---------- */
+function catIndex(cid){return state.cats.findIndex(c=>c.id===cid);}
+function catColor(cid){const i=catIndex(cid);return i<0?'#64748b':CAT_COLORS[i%CAT_COLORS.length];}
+function catName(cid){const c=state.cats.find(c=>c.id===cid);return c?c.name:'Ohne Kategorie';}
+
+/* ---------- Persistenz ---------- */
+function load(){
+  let s=null;
+  try{s=JSON.parse(localStorage.getItem(LS));}catch(e){}
+  if(!s){try{s=JSON.parse(localStorage.getItem(LS_OLD));}catch(e){}}
+  if(s)state={deposit:1,cats:[],drinks:[],history:[],ui:{...DEF_UI},...s};
+  state.ui={...DEF_UI,...(state.ui||{})};
+  if(!Array.isArray(state.cats))state.cats=[];
+  if(!state.cats.length){
+    state.cats=[{id:id(),name:'Getränke',emoji:'🍺'},{id:id(),name:'Essen',emoji:'🍔'}];
+  }
+  if(!state.drinks.length){
+    state.drinks=[
+      {id:id(),name:'Bier',price:3,pfand:true,emoji:'🍺',cat:state.cats[0].id},
+      {id:id(),name:'Softdrink',price:2,pfand:true,emoji:'🥤',cat:state.cats[0].id},
+      {id:id(),name:'Wasser',price:1.5,pfand:true,emoji:'💧',cat:state.cats[0].id},
+      {id:id(),name:'Schnaps',price:2,pfand:false,emoji:'🥃',cat:state.cats[0].id},
+      {id:id(),name:'Bratwurst',price:3.5,pfand:false,emoji:'🌭',cat:state.cats[1].id},
+      {id:id(),name:'Pommes',price:3,pfand:true,emoji:'🍟',cat:state.cats[1].id},
+    ];
+  }
+  state.drinks.forEach(d=>{
+    if(d.pfand===undefined)d.pfand=true;
+    if(d.emoji===undefined)d.emoji='';
+    if(d.color!==undefined)delete d.color;                 // Farbpicker entfernt
+    if(!d.cat||catIndex(d.cat)<0)d.cat=state.cats[0].id;   // Migration
+  });
+  save();
+}
+function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){toast('Speichern fehlgeschlagen');}}
 
 /* ---------- UI-Einstellungen ---------- */
 function applyUI(){
@@ -501,21 +596,40 @@ function applyUI(){
 }
 function setUI(k,v){state.ui[k]=v;save();applyUI();if(k==='wake')syncWake();}
 
-/* ---------- Getränke-Grid ---------- */
+/* ---------- Kategorie-Tabs ---------- */
+function renderTabs(){
+  const t=document.getElementById('tabs');
+  if(state.cats.length<2){t.style.display='none';state.ui.filter='all';return;}
+  t.style.display='';
+  if(state.ui.filter!=='all'&&catIndex(state.ui.filter)<0)state.ui.filter='all';
+  let h=`<button class="tab${state.ui.filter==='all'?' on':''}" style="--c:var(--accent)" onclick="setFilter('all')">Alle</button>`;
+  h+=state.cats.map(c=>`
+    <button class="tab${state.ui.filter===c.id?' on':''}" style="--c:${catColor(c.id)}" onclick="setFilter('${c.id}')">
+      <span class="dot"></span>${c.emoji?esc(c.emoji)+' ':''}${esc(c.name)}
+    </button>`).join('');
+  t.innerHTML=h;
+}
+function setFilter(f){state.ui.filter=f;save();renderTabs();renderGrid();}
+
+/* ---------- Artikel-Grid ---------- */
+function visibleDrinks(){
+  return state.ui.filter==='all'?state.drinks:state.drinks.filter(d=>d.cat===state.ui.filter);
+}
 function renderGrid(){
   const g=document.getElementById('grid');g.innerHTML='';
-  document.getElementById('noDrinks').style.display=state.drinks.length?'none':'block';
-  state.drinks.forEach(d=>{
+  const list=visibleDrinks();
+  document.getElementById('noDrinks').style.display=list.length?'none':'block';
+  list.forEach(d=>{
     const q=order[d.id]||0;
     const el=document.createElement('div');
     el.className='drink'+(q?' on':'');
-    if(d.color)el.style.setProperty('--c',d.color);
+    el.style.setProperty('--c',catColor(d.cat));
     el.onclick=()=>{order[d.id]=(order[d.id]||0)+1;renderGrid();renderTotals();};
     el.innerHTML=`
       ${q?`<span class="badge">${q}</span>`:''}
       ${d.emoji?`<div class="e">${esc(d.emoji)}</div>`:''}
       <div class="n">${esc(d.name)}</div>
-      <div class="p">${eur(d.price)}${d.pfand?' + Pfand':' · ohne Pfand'}</div>
+      <div class="p">${eur(d.price)}${d.pfand?' + Pfand':''}</div>
       ${q?`<div class="qtyrow">
         <button onclick="event.stopPropagation();dec('${d.id}')">−</button>
         <button onclick="event.stopPropagation();inc('${d.id}')">+</button>
@@ -549,7 +663,8 @@ function renderTotals(){
 function checkout(){
   const c=calc();
   if(c.count===0&&ret===0)return;
-  const lines=state.drinks.filter(d=>order[d.id]).map(d=>({name:d.name,qty:order[d.id],price:d.price}));
+  const lines=state.drinks.filter(d=>order[d.id])
+    .map(d=>({name:d.name,qty:order[d.id],price:d.price,cat:catName(d.cat)}));
   state.history.unshift({
     hid:id(),t:Date.now(),lines,count:c.count,depCount:c.depCount,ret,
     drinksSum:c.drinksSum,depNew:c.depNew,depRet:c.depRet,total:c.total
@@ -575,7 +690,7 @@ function renderHistory(){
 function clearHistory(){if(confirm('Kompletten Verlauf und die Statistik wirklich löschen?')){
   state.history=[];save();renderHistory();renderLog();renderSturz();toast('Verlauf gelöscht');}}
 
-/* ---------- Verlaufsübersicht (einzeln löschen) ---------- */
+/* ---------- Verlaufsübersicht ---------- */
 function openLog(){renderLog();document.getElementById('log').classList.add('open');}
 function closeLog(){document.getElementById('log').classList.remove('open');}
 function renderLog(){
@@ -589,7 +704,7 @@ function renderLog(){
     el.innerHTML=`
       <div class="meta">
         <div class="when">${dt} Uhr</div>
-        <div class="what">${items.length?esc(items.join(' · ')):'—'}${x.ret?` · ${x.ret} Glas zurück`:''}</div>
+        <div class="what">${items.length?esc(items.join(' · ')):'—'}${x.ret?` · ${x.ret}× Pfand zurück`:''}</div>
       </div>
       <div class="amt">${eur(x.total)}</div>
       <button class="del" title="Löschen">🗑</button>`;
@@ -603,30 +718,108 @@ function delEntry(hid,dt,total){
   save();renderLog();renderHistory();renderSturz();toast('Abrechnung gelöscht');
 }
 
+/* ---------- Emoji-Picker ---------- */
+const EMOJIS={
+  'Getränke':['🍺','🍻','🍷','🥂','🍾','🥃','🍸','🍹','🍶','🧉','🥤','🧃','🧋','☕','🫖','🍵','🥛','💧','🧊','🍫'],
+  'Essen herzhaft':['🌭','🍔','🍟','🍕','🥨','🥖','🥐','🥪','🌮','🌯','🥙','🧆','🥗','🍲','🍜','🍝','🍛','🍚','🥘','🍳','🥓','🍗','🍖','🥩','🧀','🥟','🍤','🍣','🧅','🌽'],
+  'Süßes & Snacks':['🍦','🍧','🍨','🍩','🍪','🎂','🧁','🥧','🍮','🍬','🍭','🍯','🥜','🍿','🥞','🧇','🍰','🍫'],
+  'Obst':['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍒','🍑','🥭','🍍','🥥','🥝','🍅'],
+  'Sonstiges':['🎪','🎟','🎫','🎁','🛍','🧢','👕','📕','🕯','🌸','🎈','🃏','🎯','🧺','🔥','⭐','❤️','💶','🧾','🛒']
+};
+let emojiCb=null;
+function pickEmoji(cb){
+  emojiCb=cb;
+  document.getElementById('epickBody').innerHTML=Object.keys(EMOJIS).map(g=>`
+    <div class="egroup">${g}</div>
+    <div class="egrid">${EMOJIS[g].map(e=>`<button onclick="chooseEmoji('${e}')">${e}</button>`).join('')}</div>`).join('');
+  document.getElementById('epick').classList.add('open');
+}
+function closeEmoji(){document.getElementById('epick').classList.remove('open');emojiCb=null;}
+function chooseEmoji(e){if(emojiCb)emojiCb(e);closeEmoji();}
+document.getElementById('epick').addEventListener('click',e=>{if(e.target.id==='epick')closeEmoji();});
+function setBtnEmoji(btnId,v){
+  const b=document.getElementById(btnId);
+  b.textContent=v||'＋';
+  b.classList.toggle('none',!v);
+  b.dataset.emoji=v||'';
+}
+
 /* ---------- Einstellungen ---------- */
 function openSettings(){document.getElementById('settings').classList.add('open');
-  document.getElementById('depInput').value=state.deposit;applyUI();renderEdit();}
+  document.getElementById('depInput').value=state.deposit;applyUI();renderCats();renderEdit();}
 function closeSettings(){document.getElementById('settings').classList.remove('open');}
+
+function catOptions(sel){
+  return state.cats.map(c=>`<option value="${c.id}"${c.id===sel?' selected':''}>${esc((c.emoji?c.emoji+' ':'')+c.name)}</option>`).join('');
+}
+function renderCats(){
+  const l=document.getElementById('catList');l.innerHTML='';
+  state.cats.forEach((c,i)=>{
+    const r=document.createElement('div');r.className='crow';r.dataset.id=c.id;
+    r.innerHTML=`
+      ${dragCell(i,state.cats.length,'cat',c.id)}
+      <span class="cdot" style="background:${catColor(c.id)}"></span>
+      <button class="emojibtn${c.emoji?'':' none'}">${c.emoji?esc(c.emoji):'＋'}</button>
+      <input value="${esc(c.name)}" onchange="editCat('${c.id}','name',this.value)">
+      <button class="del" onclick="delCat('${c.id}')">🗑</button>`;
+    r.querySelector('.emojibtn').onclick=()=>pickEmoji(v=>editCat(c.id,'emoji',v));
+    bindDrag(r);
+    l.appendChild(r);
+  });
+  document.getElementById('newCatDot').style.background=CAT_COLORS[state.cats.length%CAT_COLORS.length];
+  const nc=document.getElementById('newCat');if(nc)nc.innerHTML=catOptions(state.cats[0]&&state.cats[0].id);
+}
+function editCat(i,k,v){
+  const c=state.cats.find(x=>x.id===i);if(!c)return;
+  c[k]=v;save();renderCats();renderEdit();renderTabs();renderGrid();
+}
+function addCat(){
+  const n=document.getElementById('newCatName').value.trim();
+  const em=document.getElementById('newCatEmoji').dataset.emoji||'';
+  if(!n){toast('Name angeben');return;}
+  state.cats.push({id:id(),name:n,emoji:em});
+  document.getElementById('newCatName').value='';
+  setBtnEmoji('newCatEmoji','');
+  save();renderCats();renderEdit();renderTabs();renderGrid();
+}
+function delCat(i){
+  if(state.cats.length<2){toast('Mindestens eine Kategorie nötig');return;}
+  const c=state.cats.find(x=>x.id===i);
+  const used=state.drinks.filter(d=>d.cat===i);
+  const rest=state.cats.filter(x=>x.id!==i);
+  const msg=used.length
+    ? `„${c.name}" löschen?\n\n${used.length} Artikel werden nach „${rest[0].name}" verschoben.`
+    : `„${c.name}" wirklich löschen?`;
+  if(!confirm(msg))return;
+  used.forEach(d=>d.cat=rest[0].id);
+  state.cats=rest;
+  if(state.ui.filter===i)state.ui.filter='all';
+  save();renderCats();renderEdit();renderTabs();renderGrid();
+}
+
 function renderEdit(){
   const l=document.getElementById('editList');l.innerHTML='';
-  state.drinks.forEach(d=>{
+  state.drinks.forEach((d,i)=>{
     const r=document.createElement('div');r.className='srow';r.dataset.id=d.id;
     r.innerHTML=`
-      <span class="drag" title="Ziehen zum Sortieren">⠿</span>
-      <input class="emoji" maxlength="2" value="${esc(d.emoji||'')}" placeholder="🙂" onchange="editDrink('${d.id}','emoji',this.value)">
+      ${dragCell(i,state.drinks.length,'drink',d.id)}
+      <button class="emojibtn${d.emoji?'':' none'}">${d.emoji?esc(d.emoji):'＋'}</button>
       <input class="name" value="${esc(d.name)}" onchange="editDrink('${d.id}','name',this.value)">
       <input class="price" type="number" step="0.1" min="0" inputmode="decimal" value="${d.price}" onchange="editDrink('${d.id}','price',this.value)">
       <button class="del" onclick="delDrink('${d.id}')">🗑</button>
-      <input class="color" type="color" value="${d.color||'#2d323d'}" oninput="editDrink('${d.id}','color',this.value)">
+      <select class="cat" onchange="editDrink('${d.id}','cat',this.value)">${catOptions(d.cat)}</select>
       <label class="pfchk"><input type="checkbox" ${d.pfand?'checked':''} onchange="editDrink('${d.id}','pfand',this.checked)"> Pfand</label>`;
-    r.querySelector('.drag').addEventListener('pointerdown',e=>startDrag(e,r));
+    r.querySelector('.emojibtn').onclick=()=>pickEmoji(v=>editDrink(d.id,'emoji',v));
+    bindDrag(r);
     l.appendChild(r);
   });
 }
 function editDrink(i,k,v){
   const d=state.drinks.find(x=>x.id===i);if(!d)return;
   if(k==='price')v=parseFloat((''+v).replace(',','.'))||0;
-  d[k]=v;save();renderGrid();renderTotals();
+  d[k]=v;save();
+  if(k==='emoji'||k==='cat')renderEdit();
+  renderTabs();renderGrid();renderTotals();
 }
 function delDrink(i){
   const d=state.drinks.find(x=>x.id===i);
@@ -636,15 +829,15 @@ function delDrink(i){
 }
 function addDrink(){
   const n=document.getElementById('newName').value.trim();
-  const p=parseFloat(document.getElementById('newPrice').value.replace(',','.'));
+  const p=parseFloat((document.getElementById('newPrice').value||'').replace(',','.'));
   const pf=document.getElementById('newPfand').checked;
-  const em=document.getElementById('newEmoji').value.trim();
-  const co=document.getElementById('newColor').value;
+  const em=document.getElementById('newEmoji').dataset.emoji||'';
+  const ct=document.getElementById('newCat').value||state.cats[0].id;
   if(!n||isNaN(p)){toast('Name und Preis angeben');return;}
-  state.drinks.push({id:id(),name:n,price:p,pfand:pf,emoji:em,color:co});
+  state.drinks.push({id:id(),name:n,price:p,pfand:pf,emoji:em,cat:ct});
   document.getElementById('newName').value='';document.getElementById('newPrice').value='';
-  document.getElementById('newEmoji').value='';document.getElementById('newPfand').checked=true;
-  save();renderEdit();renderGrid();
+  setBtnEmoji('newEmoji','');document.getElementById('newPfand').checked=true;
+  save();renderEdit();renderTabs();renderGrid();
 }
 function sortByPopularity(){
   const per={};
@@ -658,34 +851,95 @@ document.getElementById('depInput').addEventListener('change',e=>{
 document.getElementById('settings').addEventListener('click',e=>{if(e.target.id==='settings')closeSettings();});
 document.getElementById('log').addEventListener('click',e=>{if(e.target.id==='log')closeLog();});
 
-/* ---------- Drag & Drop (Maus + Touch) ---------- */
-let dragRow=null;
-function startDrag(e,row){
-  dragRow=row;row.classList.add('dragging');
-  e.target.setPointerCapture(e.pointerId);
-  e.target.addEventListener('pointermove',onDrag);
-  e.target.addEventListener('pointerup',endDrag,{once:true});
-  e.target.addEventListener('pointercancel',endDrag,{once:true});
-  e.preventDefault();
+/* ---------- Sortieren: Pfeile + Drag & Drop (Maus, Touch, Stift) ---------- */
+function dragCell(i,n,type,itemId){
+  return `<div class="dragcell">
+    <button class="mv" ${i===0?'disabled':''} onclick="moveItem('${type}','${itemId}',-1)" title="nach oben">▲</button>
+    <span class="drag" title="Ziehen zum Sortieren">⠿</span>
+    <button class="mv" ${i===n-1?'disabled':''} onclick="moveItem('${type}','${itemId}',1)" title="nach unten">▼</button>
+  </div>`;
 }
-function onDrag(e){
-  if(!dragRow)return;
-  const el=document.elementFromPoint(e.clientX,e.clientY);
-  const t=el&&el.closest('.srow');
-  if(!t||t===dragRow||t.parentNode!==dragRow.parentNode)return;
-  const r=t.getBoundingClientRect();
-  const before=e.clientY < r.top+r.height/2;
-  t.parentNode.insertBefore(dragRow, before?t:t.nextSibling);
+function listOf(type){return type==='cat'?state.cats:state.drinks;}
+function afterSort(type){
+  save();
+  if(type==='cat'){renderCats();renderEdit();renderTabs();renderGrid();}
+  else{renderEdit();renderGrid();}
 }
-function endDrag(e){
-  if(!dragRow)return;
-  dragRow.classList.remove('dragging');
-  e.target.removeEventListener('pointermove',onDrag);
-  dragRow=null;
-  const ids=[...document.querySelectorAll('#editList .srow')].map(r=>r.dataset.id);
-  state.drinks.sort((a,b)=>ids.indexOf(a.id)-ids.indexOf(b.id));
-  save();renderGrid();
+function moveItem(type,itemId,dir){
+  const arr=listOf(type);
+  const i=arr.findIndex(x=>x.id===itemId);
+  const j=i+dir;
+  if(i<0||j<0||j>=arr.length)return;
+  const [x]=arr.splice(i,1);arr.splice(j,0,x);
+  afterSort(type);
 }
+
+let D=null;
+function bindDrag(row){
+  const h=row.querySelector('.drag');
+  if(!h)return;
+  h.addEventListener('pointerdown',e=>{
+    if(e.button>0)return;
+    e.preventDefault();dragStart(row,e.clientY);
+  });
+  h.addEventListener('touchstart',e=>{
+    e.preventDefault();dragStart(row,e.touches[0].clientY);
+  },{passive:false});
+  h.addEventListener('mousedown',e=>{e.preventDefault();dragStart(row,e.clientY);});
+  h.addEventListener('dragstart',e=>e.preventDefault());
+}
+function scroller(el){
+  for(let p=el.parentElement;p;p=p.parentElement){
+    const o=getComputedStyle(p).overflowY;
+    if((o==='auto'||o==='scroll')&&p.scrollHeight>p.clientHeight+2)return p;
+  }
+  return null;
+}
+function dragStart(row,y){
+  if(D)return;
+  D={row,list:row.parentNode,type:row.parentNode.id==='catList'?'cat':'drink',
+     scroll:scroller(row),y};
+  row.classList.add('dragging');
+  document.body.classList.add('nosel');
+}
+function dragMove(y){
+  if(!D)return;
+  D.y=y;
+  const rows=[...D.list.children].filter(r=>r!==D.row);
+  let ref=null;
+  for(const r of rows){
+    const b=r.getBoundingClientRect();
+    if(y<b.top+b.height/2){ref=r;break;}
+  }
+  const cur=D.row.nextElementSibling;
+  if(ref!==cur)D.list.insertBefore(D.row,ref);
+  autoScroll(y);
+}
+function autoScroll(y){
+  const sc=D&&D.scroll;if(!sc)return;
+  const b=sc.getBoundingClientRect(),m=48;
+  if(y<b.top+m)sc.scrollTop-=10;
+  else if(y>b.bottom-m)sc.scrollTop+=10;
+}
+function dragEnd(){
+  if(!D)return;
+  const {row,list,type}=D;
+  D=null;
+  row.classList.remove('dragging');
+  document.body.classList.remove('nosel');
+  const ids=[...list.children].map(r=>r.dataset.id);
+  listOf(type).sort((a,b)=>ids.indexOf(a.id)-ids.indexOf(b.id));
+  afterSort(type);
+}
+addEventListener('pointermove',e=>{if(D){e.preventDefault();dragMove(e.clientY);}},{passive:false});
+addEventListener('mousemove',e=>{if(D)dragMove(e.clientY);});
+addEventListener('touchmove',e=>{if(D){e.preventDefault();dragMove(e.touches[0].clientY);}},{passive:false});
+addEventListener('pointerup',dragEnd);
+addEventListener('pointercancel',dragEnd);
+addEventListener('mouseup',dragEnd);
+addEventListener('touchend',dragEnd);
+addEventListener('touchcancel',dragEnd);
+addEventListener('blur',dragEnd);
 
 /* ---------- Kassensturz ---------- */
 function openSturz(){renderSturz();document.getElementById('sturz').classList.add('open');}
@@ -694,32 +948,57 @@ document.getElementById('sturz').addEventListener('click',e=>{if(e.target.id==='
 function renderSturz(){
   const h=state.history;
   let umsatz=0,drinksSum=0,depNew=0,depRet=0,drinkCount=0;
-  const per={};
+  const per={},perCat={};
   h.forEach(x=>{
     umsatz+=x.total;drinksSum+=x.drinksSum;depNew+=x.depNew;depRet+=x.depRet;drinkCount+=x.count;
     x.lines.forEach(l=>{
-      if(!per[l.name])per[l.name]={qty:0,rev:0};
+      if(!per[l.name])per[l.name]={qty:0,rev:0,cat:l.cat||''};
       per[l.name].qty+=l.qty;per[l.name].rev+=l.qty*l.price;
+      const c=l.cat||'Ohne Kategorie';
+      if(!perCat[c])perCat[c]={qty:0,rev:0};
+      perCat[c].qty+=l.qty;perCat[c].rev+=l.qty*l.price;
     });
   });
   document.getElementById('statCards').innerHTML=`
     <div class="stat wide hi"><div class="k">Umsatz gesamt</div><div class="v">${eur(umsatz)}</div></div>
     <div class="stat"><div class="k">Abrechnungen</div><div class="v">${h.length}</div></div>
-    <div class="stat"><div class="k">Getränke ausgegeben</div><div class="v">${drinkCount}</div></div>
-    <div class="stat"><div class="k">nur Getränke</div><div class="v">${eur(drinksSum)}</div></div>
+    <div class="stat"><div class="k">Artikel ausgegeben</div><div class="v">${drinkCount}</div></div>
+    <div class="stat"><div class="k">nur Waren</div><div class="v">${eur(drinksSum)}</div></div>
     <div class="stat"><div class="k">Pfand-Saldo</div><div class="v">${eur(depNew-depRet)}</div></div>`;
+
+  const colOf=n=>{const c=state.cats.find(c=>c.name===n);return c?catColor(c.id):'#64748b';};
+  const cats=Object.keys(perCat).sort((a,b)=>perCat[b].rev-perCat[a].rev);
+  const bc=document.getElementById('brkCat');
+  bc.innerHTML=cats.length?cats.map(n=>`
+    <div class="r"><span><span class="cdot" style="background:${colOf(n)}"></span>${esc(n)} <span class="q">×${perCat[n].qty}</span></span><span>${eur(perCat[n].rev)}</span></div>`).join('')
+    :'<div class="r"><span class="q">Noch keine Daten</span><span></span></div>';
+
   const names=Object.keys(per).sort((a,b)=>per[b].qty-per[a].qty);
   const brk=document.getElementById('brk');
   brk.innerHTML=names.length?names.map(n=>`
-    <div class="r"><span>${esc(n)} <span class="q">×${per[n].qty}</span></span><span>${eur(per[n].rev)}</span></div>`).join('')
+    <div class="r"><span><span class="cdot" style="background:${colOf(per[n].cat)}"></span>${esc(n)} <span class="q">×${per[n].qty}</span></span><span>${eur(per[n].rev)}</span></div>`).join('')
     :'<div class="r"><span class="q">Noch keine Daten</span><span></span></div>';
   document.getElementById('pfBal').textContent=`${eur(depNew)} / −${eur(depRet)}`;
   renderChart();
 }
+
+/* Catmull-Rom → Bézier, für weiche Kurven */
+function curvePath(p,minY,maxY){
+  if(!p.length)return '';
+  if(p.length===1)return `M ${p[0][0]} ${p[0][1]}`;
+  const cl=v=>Math.min(maxY,Math.max(minY,v));
+  let d=`M ${p[0][0]} ${p[0][1]}`;
+  for(let i=0;i<p.length-1;i++){
+    const p0=p[i-1]||p[i], p1=p[i], p2=p[i+1], p3=p[i+2]||p2;
+    const c1=[p1[0]+(p2[0]-p0[0])/6, cl(p1[1]+(p2[1]-p0[1])/6)];
+    const c2=[p2[0]-(p3[0]-p1[0])/6, cl(p2[1]-(p3[1]-p1[1])/6)];
+    d+=` C ${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  return d;
+}
 function renderChart(){
   const box=document.getElementById('chart');
   if(!state.history.length){box.innerHTML='<div class="cempty">Noch keine Daten für den Zeitverlauf.</div>';return;}
-  // Umsatz je Stunde bündeln
   const b={};
   state.history.forEach(x=>{
     const d=new Date(x.t);d.setMinutes(0,0,0);
@@ -727,34 +1006,52 @@ function renderChart(){
     if(!b[k])b[k]={sum:0,cnt:0};
     b[k].sum+=x.total;b[k].cnt+=x.count;
   });
-  let keys=Object.keys(b).map(Number).sort((a,b2)=>a-b2);
-  // Lücken innerhalb des Zeitraums auffüllen, max. 14 Balken (letzte)
+  const keys=Object.keys(b).map(Number).sort((a,b2)=>a-b2);
   const full=[];
   for(let t=keys[0];t<=keys[keys.length-1];t+=3600000)full.push(t);
   const shown=full.slice(-14);
-  const max=Math.max(...shown.map(t=>(b[t]?b[t].sum:0)),1);
+  const vals=shown.map(t=>b[t]?b[t].sum:0);
+  const max=Math.max(...vals,1);
 
-  const W=640,H=200,PL=44,PR=8,PT=12,PB=26;
+  const W=640,H=210,PL=46,PR=14,PT=14,PB=28;
   const iw=W-PL-PR, ih=H-PT-PB;
-  const bw=iw/shown.length;
+  const X=i=>shown.length===1?PL+iw/2:PL+iw*i/(shown.length-1);
+  const Y=v=>PT+ih-ih*(v/max);
+  const pts=vals.map((v,i)=>[X(i),Y(v)]);
+
   const grid=[0,.5,1].map(f=>{
     const y=PT+ih-ih*f;
     return `<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="var(--border)" stroke-width="1"/>
       <text x="${PL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="var(--muted)">${eur(max*f).replace(' €','')}</text>`;
   }).join('');
-  const bars=shown.map((t,i)=>{
-    const v=b[t]?b[t].sum:0;
-    const bh=Math.round(ih*(v/max));
-    const x=PL+i*bw+bw*0.15, w=bw*0.7, y=PT+ih-bh;
+
+  const line=curvePath(pts,PT,PT+ih);
+  const area=pts.length>1
+    ? `${line} L ${X(pts.length-1)} ${PT+ih} L ${X(0)} ${PT+ih} Z` : '';
+
+  const dots=pts.map((p,i)=>{
+    const t=shown[i], v=vals[i];
     const lbl=new Date(t).getHours().toString().padStart(2,'0');
-    const label=(shown.length<=8||i%2===0)
-      ? `<text x="${x+w/2}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--muted)">${lbl}</text>`:'';
-    return `<g><rect x="${x}" y="${y}" width="${w}" height="${Math.max(bh,v>0?2:0)}" rx="3" fill="var(--accent2)" opacity="${v?1:.15}">
-      <title>${lbl}:00 Uhr — ${eur(v)}${b[t]?` · ${b[t].cnt} Getränke`:''}</title></rect>${label}</g>`;
+    return `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${v?3.5:2.5}"
+      fill="var(--bg)" stroke="var(--accent2)" stroke-width="2" opacity="${v?1:.4}">
+      <title>${lbl}:00 Uhr — ${eur(v)}${b[t]?` · ${b[t].cnt} Artikel`:''}</title></circle>`;
   }).join('');
+
+  const labels=shown.map((t,i)=>{
+    if(shown.length>8&&i%2!==0)return '';
+    const lbl=new Date(t).getHours().toString().padStart(2,'0');
+    return `<text x="${X(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--muted)">${lbl}</text>`;
+  }).join('');
+
   box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Umsatz pro Stunde">
-    ${grid}${bars}
-    <text x="${PL}" y="${H-8}" font-size="10" fill="var(--muted)" opacity="0">.</text>
+    <defs><linearGradient id="cgrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--accent2)" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="var(--accent2)" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${grid}
+    ${area?`<path d="${area}" fill="url(#cgrad)" stroke="none"/>`:''}
+    <path d="${line}" fill="none" stroke="var(--accent2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dots}${labels}
   </svg>
   <div style="text-align:center;font-size:11px;color:var(--muted);padding:2px 0 6px">Umsatz je Stunde (€)</div>`;
 }
@@ -764,7 +1061,7 @@ function exportData(){
   const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='getraenkestand-'+new Date().toISOString().slice(0,10)+'.json';
+  a.download='standkasse-'+new Date().toISOString().slice(0,10)+'.json';
   a.click();URL.revokeObjectURL(a.href);
 }
 function importData(inp){
@@ -774,11 +1071,17 @@ function importData(inp){
     try{
       const d=JSON.parse(r.result);
       if(!d||!Array.isArray(d.drinks))throw 0;
-      state={deposit:1,drinks:[],history:[],ui:{...DEF_UI},...d};
+      state={deposit:1,cats:[],drinks:[],history:[],ui:{...DEF_UI},...d};
       state.ui={...DEF_UI,...(state.ui||{})};
-      state.drinks.forEach(x=>{if(x.pfand===undefined)x.pfand=true;if(!x.id)x.id=id();});
+      if(!Array.isArray(state.cats)||!state.cats.length)state.cats=[{id:id(),name:'Getränke',emoji:'🍺'}];
+      state.drinks.forEach(x=>{
+        if(x.pfand===undefined)x.pfand=true;
+        if(!x.id)x.id=id();
+        if(x.color!==undefined)delete x.color;
+        if(!x.cat||catIndex(x.cat)<0)x.cat=state.cats[0].id;
+      });
       state.history.forEach(x=>{if(!x.hid)x.hid=id();});
-      save();resetOrder();applyUI();renderEdit();renderHistory();
+      save();resetOrder();applyUI();renderCats();renderEdit();renderTabs();renderGrid();renderHistory();
       document.getElementById('depInput').value=state.deposit;
       toast('Daten importiert');
     }catch(e){alert('Datei konnte nicht gelesen werden.');}
@@ -825,7 +1128,7 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
 }
 
 /* ---------- Start ---------- */
-load();applyUI();renderGrid();renderTotals();renderHistory();syncWake();
+load();applyUI();renderCats();renderTabs();renderGrid();renderTotals();renderHistory();syncWake();
 </script>
 </body>
 </html>
