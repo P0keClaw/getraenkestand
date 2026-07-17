@@ -12,14 +12,21 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
 <style>
-:root{
+:root, [data-theme="dark"]{
   --bg:#0f1115; --card:#1a1d24; --card2:#232733; --accent:#3b82f6;
   --accent2:#22c55e; --danger:#ef4444; --text:#f1f5f9; --muted:#94a3b8;
-  --border:#2d323d;
+  --border:#2d323d; --on:#1e2740; --shadow:rgba(0,0,0,.4);
   --tile:170px;
   --gridcols:repeat(auto-fill,minmax(var(--tile),1fr));
   --hdr:73px;
 }
+[data-theme="light"]{
+  --bg:#f4f6fa; --card:#ffffff; --card2:#eaeef5; --accent:#2563eb;
+  --accent2:#15a34a; --danger:#dc2626; --text:#0f172a; --muted:#64748b;
+  --border:#d8e0ea; --on:#e4edff; --shadow:rgba(15,23,42,.14);
+}
+html{color-scheme:dark}
+[data-theme="light"]{color-scheme:light}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{background:var(--bg);color:var(--text);font-family:-apple-system,system-ui,sans-serif}
 body{padding-bottom:220px}
@@ -64,7 +71,7 @@ header h1{font-size:18px;font-weight:700}
 .drink .e{font-size:22px;line-height:1;margin-bottom:2px}
 .drink .n{font-size:16px;font-weight:600;line-height:1.2}
 .drink .p{font-size:13px;color:var(--muted)}
-.drink.on{border-color:var(--accent);background:#1e2740}
+.drink.on{border-color:var(--accent);background:var(--on)}
 .badge{
   position:absolute;top:-8px;right:-8px;background:var(--accent);
   color:#fff;min-width:26px;height:26px;border-radius:13px;
@@ -80,6 +87,7 @@ header h1{font-size:18px;font-weight:700}
 h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase;letter-spacing:.5px}
 .h2row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 10px}
 .h2row h2{margin:0}
+.pfandwrap{display:grid;gap:8px}
 .pfandbox{
   background:var(--card);border:1px solid var(--border);border-radius:16px;
   padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px
@@ -96,9 +104,29 @@ h2{font-size:14px;color:var(--muted);margin:22px 0 10px;text-transform:uppercase
 .bar{
   position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--card);
   border-top:1px solid var(--border);padding:12px 16px calc(16px + env(safe-area-inset-bottom));
-  box-shadow:0 -6px 20px rgba(0,0,0,.4)
+  box-shadow:0 -6px 20px var(--shadow)
 }
 .lines{font-size:13px;color:var(--muted);display:grid;gap:2px;margin-bottom:8px}
+.giverow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.gbtn{flex:1 1 0;min-width:52px;background:var(--card2);border:1px solid var(--border);
+  color:var(--text);border-radius:10px;padding:9px 4px;font-size:14px;font-weight:600;cursor:pointer}
+.gbtn.on{border-color:var(--accent);background:var(--accent);color:#fff}
+.paytotal{display:flex;justify-content:space-between;align-items:baseline;
+  background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.paytotal .k{font-size:15px;color:var(--muted)}
+.paytotal .v{font-size:30px;font-weight:800}
+.paylbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.gbtn.big{flex:1 1 74px;padding:16px 6px;font-size:17px}
+.giveinp{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);
+  border-radius:12px;padding:14px;font-size:19px;text-align:right;margin-bottom:14px}
+.changebox{display:flex;justify-content:space-between;align-items:baseline;
+  background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent2);
+  border-radius:14px;padding:16px;margin-bottom:16px}
+.changebox.miss{border-left-color:var(--danger)}
+.changebox .k{font-size:15px;color:var(--muted)}
+.changebox .v{font-size:34px;font-weight:800;color:var(--accent2)}
+.changebox.miss .v{color:var(--danger);font-size:26px}
+.payact{display:flex;gap:10px}
 .lines .l{display:flex;justify-content:space-between}
 .total{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
 .total .t{font-size:15px;font-weight:600}
@@ -198,7 +226,7 @@ body.nosel{user-select:none;-webkit-user-select:none}
 /* Kategorien-Editor */
 .crow{
   display:grid;gap:8px;align-items:center;
-  grid-template-columns:34px 14px 48px minmax(0,1fr) 44px;
+  grid-template-columns:34px 14px 48px minmax(0,1fr) 74px 44px;
   background:var(--card);border:1px solid var(--border);border-radius:12px;
   padding:8px;margin-bottom:8px
 }
@@ -207,9 +235,10 @@ body.nosel{user-select:none;-webkit-user-select:none}
 .crow .emojibtn{grid-area:auto}
 .crow input{background:var(--card2);border:1px solid var(--border);color:var(--text);
   border-radius:9px;padding:11px;font-size:15px;width:100%;min-width:0}
+.crow input.dep{text-align:right;padding:11px 8px;font-size:14px}
 .crow .del{background:var(--danger);border:none;color:#fff;width:44px;height:40px;
   border-radius:9px;font-size:18px;cursor:pointer}
-.caddrow{grid-template-columns:34px 14px 48px minmax(0,1fr) 44px;background:var(--card2)}
+.caddrow{grid-template-columns:34px 14px 48px minmax(0,1fr) 74px 44px;background:var(--card2)}
 
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
 .stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
@@ -249,8 +278,11 @@ body.nosel{user-select:none;-webkit-user-select:none}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
   background:var(--card2);border:1px solid var(--border);color:var(--text);
   padding:12px 18px;border-radius:12px;font-size:14px;z-index:99;
-  opacity:0;pointer-events:none;transition:.2s;box-shadow:0 8px 24px rgba(0,0,0,.5)}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  opacity:0;pointer-events:none;transition:.2s;box-shadow:0 8px 24px var(--shadow);
+  display:flex;align-items:center;gap:16px;max-width:92vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.toast button{background:none;border:none;color:var(--accent);font-weight:700;
+  font-size:14px;cursor:pointer;padding:2px;white-space:nowrap}
 
 /* ---------- Tablet / Desktop: Seitenspalte ---------- */
 @media (min-width:760px) and (min-height:560px){
@@ -376,18 +408,8 @@ body.nosel{user-select:none;-webkit-user-select:none}
   </section>
 
   <aside class="c-side">
-    <h2>Pfand zurück</h2>
-    <div class="pfandbox">
-      <div>
-        <div class="lbl">Zurückgegebener Pfand</div>
-        <div class="sub">je Einheit −<span id="depLbl">1,00</span> €</div>
-      </div>
-      <div class="stepper">
-        <button onclick="changeReturn(-1)">−</button>
-        <span class="val" id="retVal">0</span>
-        <button onclick="changeReturn(1)">+</button>
-      </div>
-    </div>
+    <h2 id="pfandH">Zurückgegebener Pfand</h2>
+    <div class="pfandwrap" id="pfandWrap"></div>
 
     <div class="bar">
       <div class="lines">
@@ -419,8 +441,24 @@ body.nosel{user-select:none;-webkit-user-select:none}
     <h3>Einstellungen <button class="closebtn" onclick="closeSettings()">✕</button></h3>
 
     <div class="cfg">
-      <span class="k">Pfand pro Einheit (€)</span>
-      <input id="depInput" type="number" step="0.5" min="0" inputmode="decimal">
+      <div><div class="k">Design</div><div class="s">Pfand wird je Kategorie festgelegt</div></div>
+      <select id="themeSel" onchange="setUI('theme',this.value)">
+        <option value="dark">Dunkel</option>
+        <option value="light">Hell</option>
+        <option value="auto">Automatisch</option>
+      </select>
+    </div>
+    <div class="cfg">
+      <div><div class="k">Rückgeld-Rechner</div><div class="s">„Kassieren" öffnet einen Extra-Schritt mit Gegeben &amp; Rückgeld</div></div>
+      <input class="switch" id="chgChk" type="checkbox" onchange="setUI('change',this.checked)">
+    </div>
+    <div class="cfg">
+      <div><div class="k">Vibration</div><div class="s">Kurzes Feedback beim Buchen</div></div>
+      <input class="switch" id="hapChk" type="checkbox" onchange="setUI('haptic',this.checked)">
+    </div>
+    <div class="cfg">
+      <div><div class="k">Klick-Ton</div><div class="s">Ton beim Buchen und Kassieren</div></div>
+      <input class="switch" id="sndChk" type="checkbox" onchange="setUI('sound',this.checked);if(this.checked)beep('tap')">
     </div>
     <div class="cfg">
       <div><div class="k">Kachelgröße</div><div class="s">Mindestbreite der Artikel-Kacheln</div></div>
@@ -450,7 +488,7 @@ body.nosel{user-select:none;-webkit-user-select:none}
 
     <h2 style="margin-top:22px">Kategorien</h2>
     <div class="s" style="font-size:12px;color:var(--muted);margin:-4px 0 8px">
-      Die Farbe wird automatisch aus der Reihenfolge vergeben. Sortieren: ⠿ ziehen oder ▲▼ tippen.
+      Pfandbetrag je Kategorie (0 = kein Pfand). Farbe automatisch aus der Reihenfolge. Sortieren: ⠿ ziehen oder ▲▼ tippen.
     </div>
     <div id="catList"></div>
     <div class="crow caddrow">
@@ -458,6 +496,7 @@ body.nosel{user-select:none;-webkit-user-select:none}
       <span class="cdot" id="newCatDot"></span>
       <button class="emojibtn none" id="newCatEmoji" onclick="pickEmoji(v=>setBtnEmoji('newCatEmoji',v))">＋</button>
       <input id="newCatName" placeholder="Name der Kategorie">
+      <input id="newCatDep" class="dep" type="number" step="0.5" min="0" inputmode="decimal" placeholder="Pfand €" title="Pfand je Einheit">
       <span></span>
     </div>
     <button class="addbtn" style="margin-top:8px;background:var(--card2);border:1px solid var(--border)" onclick="addCat()">+ Kategorie hinzufügen</button>
@@ -490,6 +529,23 @@ body.nosel{user-select:none;-webkit-user-select:none}
         <button class="addbtn" style="flex:1;background:var(--card2);border:1px solid var(--border)" onclick="document.getElementById('impFile').click()">⬆︎ Importieren</button>
       </div>
       <input id="impFile" type="file" accept="application/json,.json" style="display:none" onchange="importData(this)">
+    </div>
+  </div>
+</div>
+
+<!-- Kassieren / Rückgeld -->
+<div class="modal" id="pay">
+  <div class="sheet" style="max-width:460px">
+    <h3>Kassieren <button class="closebtn" onclick="closePay()">✕</button></h3>
+    <div class="paytotal"><span class="k">Endpreis</span><span class="v" id="payTotal">0,00 €</span></div>
+    <div class="paylbl">Gegeben</div>
+    <div class="giverow" id="payQuick"></div>
+    <input id="giveInp" class="giveinp" type="number" step="0.01" min="0" inputmode="decimal" placeholder="Betrag eingeben"
+           oninput="setGiven(this.value===''?null:parseFloat(this.value.replace(',','.')),true)">
+    <div class="changebox" id="changeBox"><span class="k" id="changeK">Rückgeld</span><span class="v" id="lChange">0,00 €</span></div>
+    <div class="payact">
+      <button class="btn clear" onclick="closePay()">Abbrechen</button>
+      <button class="btn pay" onclick="doCheckout()">Kassieren</button>
     </div>
   </div>
 </div>
@@ -533,25 +589,58 @@ body.nosel{user-select:none;-webkit-user-select:none}
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"><span class="msg"></span><button></button></div>
 
 <script>
 const LS='gstand_v3', LS_OLD='gstand_v2';
-const DEF_UI={tile:170,cols:'auto',wake:false,filter:'all'};
+const DEF_UI={tile:170,cols:'auto',wake:false,filter:'all',theme:'dark',haptic:true,sound:false,change:true};
 const CAT_COLORS=['#f59e0b','#3b82f6','#22c55e','#a855f7','#ef4444','#06b6d4','#ec4899','#84cc16'];
 let state={deposit:1,cats:[],drinks:[],history:[],ui:{...DEF_UI}};
-let order={}, ret=0;
+let order={}, ret={}, given=null;
 
 function id(){return Math.random().toString(36).slice(2,9);}
 function eur(n){return n.toFixed(2).replace('.',',')+' €';}
 function esc(s){return(''+s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
-  clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('show'),2200);}
+function toast(m,label,cb,ms){
+  const t=document.getElementById('toast');
+  t.querySelector('.msg').textContent=m;
+  const b=t.querySelector('button');
+  if(label&&cb){b.style.display='';b.textContent=label;
+    b.onclick=()=>{t.classList.remove('show');clearTimeout(t._x);cb();};}
+  else{b.style.display='none';b.onclick=null;}
+  t.classList.add('show');
+  clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('show'),ms||2200);
+}
+
+/* ---------- Haptik & Ton ---------- */
+function haptic(p){if(state.ui.haptic&&navigator.vibrate){try{navigator.vibrate(p||12);}catch(e){}}}
+let AC=null;
+function beep(kind){
+  if(!state.ui.sound)return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==='suspended')AC.resume();
+    const t0=AC.currentTime;
+    const tone=(f,st,dur,vol)=>{
+      const o=AC.createOscillator(),g=AC.createGain();
+      o.type='triangle';o.frequency.setValueAtTime(f,t0+st);
+      o.connect(g);g.connect(AC.destination);
+      g.gain.setValueAtTime(0.0001,t0+st);
+      g.gain.linearRampToValueAtTime(vol,t0+st+.008);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+st+dur);
+      o.start(t0+st);o.stop(t0+st+dur+.03);
+    };
+    if(kind==='pay'){tone(880,0,.10,.16);tone(1320,.08,.24,.14);}
+    else if(kind==='undo'){tone(700,0,.09,.10);tone(440,.07,.14,.09);}
+    else tone(1150,0,.05,.09);
+  }catch(e){}
+}
 
 /* ---------- Farben je Kategorie (automatisch) ---------- */
 function catIndex(cid){return state.cats.findIndex(c=>c.id===cid);}
 function catColor(cid){const i=catIndex(cid);return i<0?'#64748b':CAT_COLORS[i%CAT_COLORS.length];}
 function catName(cid){const c=state.cats.find(c=>c.id===cid);return c?c.name:'Ohne Kategorie';}
+function catDep(cid){const c=state.cats.find(c=>c.id===cid);return c&&isFinite(c.deposit)?c.deposit:0;}
 
 /* ---------- Persistenz ---------- */
 function load(){
@@ -561,9 +650,12 @@ function load(){
   if(s)state={deposit:1,cats:[],drinks:[],history:[],ui:{...DEF_UI},...s};
   state.ui={...DEF_UI,...(state.ui||{})};
   if(!Array.isArray(state.cats))state.cats=[];
+  const oldDep=isFinite(state.deposit)?state.deposit:1;
   if(!state.cats.length){
-    state.cats=[{id:id(),name:'Getränke',emoji:'🍺'},{id:id(),name:'Essen',emoji:'🍔'}];
+    state.cats=[{id:id(),name:'Getränke',emoji:'🍺',deposit:oldDep},
+                {id:id(),name:'Essen',emoji:'🍔',deposit:1}];
   }
+  state.cats.forEach(c=>{if(!isFinite(c.deposit))c.deposit=oldDep;});   // Migration globales Pfand
   if(!state.drinks.length){
     state.drinks=[
       {id:id(),name:'Bier',price:3,pfand:true,emoji:'🍺',cat:state.cats[0].id},
@@ -593,8 +685,23 @@ function applyUI(){
     : 'repeat('+state.ui.cols+',minmax(0,1fr))');
   const t=document.getElementById('tileSel'), c=document.getElementById('colSel'), w=document.getElementById('wakeChk');
   if(t)t.value=state.ui.tile; if(c)c.value=state.ui.cols; if(w)w.checked=!!state.ui.wake;
+  const h=document.getElementById('hapChk'), sd=document.getElementById('sndChk'),
+        th=document.getElementById('themeSel'), cg=document.getElementById('chgChk');
+  if(h)h.checked=!!state.ui.haptic; if(sd)sd.checked=!!state.ui.sound;
+  if(th)th.value=state.ui.theme||'dark'; if(cg)cg.checked=!!state.ui.change;
 }
-function setUI(k,v){state.ui[k]=v;save();applyUI();if(k==='wake')syncWake();}
+function setUI(k,v){state.ui[k]=v;save();applyUI();if(k==='wake')syncWake();if(k==='theme')applyTheme();}
+function applyTheme(){
+  const t=state.ui.theme||'dark';
+  const dark = t==='dark' || (t==='auto' && !matchMedia('(prefers-color-scheme: light)').matches);
+  document.documentElement.dataset.theme=dark?'dark':'light';
+  const m=document.querySelector('meta[name=theme-color]');
+  if(m)m.content=dark?'#0f1115':'#f4f6fa';
+  const sel=document.getElementById('themeSel');if(sel)sel.value=t;
+  if(document.getElementById('sturz').classList.contains('open'))renderChart();
+}
+try{matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{
+  if(state.ui.theme==='auto')applyTheme();});}catch(e){}
 
 /* ---------- Kategorie-Tabs ---------- */
 function renderTabs(){
@@ -624,7 +731,7 @@ function renderGrid(){
     const el=document.createElement('div');
     el.className='drink'+(q?' on':'');
     el.style.setProperty('--c',catColor(d.cat));
-    el.onclick=()=>{order[d.id]=(order[d.id]||0)+1;renderGrid();renderTotals();};
+    el.onclick=()=>{inc(d.id);};
     el.innerHTML=`
       ${q?`<span class="badge">${q}</span>`:''}
       ${d.emoji?`<div class="e">${esc(d.emoji)}</div>`:''}
@@ -637,16 +744,92 @@ function renderGrid(){
     g.appendChild(el);
   });
 }
-function inc(i){order[i]=(order[i]||0)+1;renderGrid();renderTotals();}
-function dec(i){order[i]=Math.max(0,(order[i]||0)-1);if(!order[i])delete order[i];renderGrid();renderTotals();}
-function changeReturn(d){ret=Math.max(0,ret+d);document.getElementById('retVal').textContent=ret;renderTotals();}
+function inc(i){order[i]=(order[i]||0)+1;haptic();beep('tap');renderGrid();renderTotals();}
+function dec(i){order[i]=Math.max(0,(order[i]||0)-1);if(!order[i])delete order[i];haptic();renderGrid();renderTotals();}
+
+/* ---------- Pfandrückgabe je Kategorie ---------- */
+function pfandCats(){return state.cats.filter(c=>catDep(c.id)>0 && state.drinks.some(d=>d.pfand&&d.cat===c.id));}
+function retTotal(){return Object.values(ret).reduce((a,b)=>a+b,0);}
+function renderPfand(){
+  const w=document.getElementById('pfandWrap'), cs=pfandCats();
+  document.getElementById('pfandH').style.display=cs.length?'':'none';
+  w.innerHTML=cs.map(c=>`
+    <div class="pfandbox">
+      <div>
+        <div class="lbl">${c.emoji?esc(c.emoji)+' ':''}${esc(c.name)}</div>
+        <div class="sub">je Einheit −${eur(catDep(c.id))}</div>
+      </div>
+      <div class="stepper">
+        <button onclick="changeReturn('${c.id}',-1)">−</button>
+        <span class="val">${ret[c.id]||0}</span>
+        <button onclick="changeReturn('${c.id}',1)">+</button>
+      </div>
+    </div>`).join('');
+}
+function changeReturn(cid,d){
+  const v=Math.max(0,(ret[cid]||0)+d);
+  if(v)ret[cid]=v;else delete ret[cid];
+  haptic();renderPfand();renderTotals();
+}
+
+/* ---------- Kassier-Popup: Gegeben / Rückgeld ---------- */
+function openPay(){
+  given=null;
+  document.getElementById('giveInp').value='';
+  document.getElementById('payTotal').textContent=eur(calc().total);
+  renderPayQuick();renderGive();
+  document.getElementById('pay').classList.add('open');
+}
+function closePay(){document.getElementById('pay').classList.remove('open');given=null;}
+document.getElementById('pay').addEventListener('click',e=>{if(e.target.id==='pay')closePay();});
+document.getElementById('giveInp').addEventListener('keydown',e=>{if(e.key==='Enter')doCheckout();});
+
+function noteSuggest(total){
+  const out=[];
+  const add=v=>{if(v>=total-0.005&&!out.includes(v)&&out.length<4)out.push(v);};
+  const c5=Math.ceil(total/5)*5;
+  add(c5);add(c5+5);[10,20,50,100].forEach(add);
+  return out.sort((a,b)=>a-b);
+}
+function renderPayQuick(){
+  const c=calc();
+  document.getElementById('payQuick').innerHTML=
+    `<button class="gbtn big" data-v="exact" onclick="setGiven('exact')">Passend</button>`+
+    noteSuggest(c.total).map(v=>`<button class="gbtn big" data-v="${v}" onclick="setGiven(${v})">${v} €</button>`).join('');
+}
+function setGiven(v,fromInput){
+  const c=calc();
+  if(v==='exact')given=c.total;
+  else given=(v===null||isNaN(v))?null:v;
+  if(!fromInput)document.getElementById('giveInp').value=given===null?'':given.toFixed(2);
+  haptic();renderGive();
+}
+function renderGive(){
+  const c=calc(), box=document.getElementById('changeBox');
+  document.querySelectorAll('#payQuick .gbtn').forEach(b=>{
+    const v=b.dataset.v;
+    const hit=given!==null&&(v==='exact'
+      ? Math.abs(given-c.total)<0.005
+      : Math.abs(given-parseFloat(v))<0.005);
+    b.classList.toggle('on',!!hit);
+  });
+  const k=document.getElementById('changeK'), el=document.getElementById('lChange');
+  if(given===null){box.classList.remove('miss');k.textContent='Rückgeld';el.textContent='—';return;}
+  const ch=given-c.total;
+  const miss=ch<-0.005;
+  box.classList.toggle('miss',miss);
+  k.textContent=miss?'Es fehlen noch':'Rückgeld';
+  el.textContent=eur(miss?-ch:Math.max(ch,0));
+}
 
 function calc(){
-  let drinksSum=0,count=0,depCount=0;
-  state.drinks.forEach(d=>{const q=order[d.id]||0;drinksSum+=q*d.price;count+=q;if(d.pfand)depCount+=q;});
-  const depNew=depCount*state.deposit;
-  const depRet=ret*state.deposit;
-  return {drinksSum,count,depCount,depNew,depRet,total:drinksSum+depNew-depRet};
+  let drinksSum=0,count=0,depCount=0,depNew=0,depRet=0,retCount=0;
+  state.drinks.forEach(d=>{
+    const q=order[d.id]||0;drinksSum+=q*d.price;count+=q;
+    if(d.pfand&&catDep(d.cat)>0){depCount+=q;depNew+=q*catDep(d.cat);}
+  });
+  Object.keys(ret).forEach(cid=>{depRet+=ret[cid]*catDep(cid);retCount+=ret[cid];});
+  return {drinksSum,count,depCount,depNew,depRet,retCount,total:drinksSum+depNew-depRet};
 }
 function renderTotals(){
   const c=calc();
@@ -655,23 +838,48 @@ function renderTotals(){
   document.getElementById('lDep').textContent=eur(c.depNew);
   document.getElementById('lRet').textContent='−'+eur(c.depRet);
   document.getElementById('tTotal').textContent=eur(c.total);
-  document.getElementById('payBtn').disabled=(c.count===0&&ret===0);
-  document.getElementById('depLbl').textContent=state.deposit.toFixed(2).replace('.',',');
+  document.getElementById('payBtn').disabled=(c.count===0&&c.retCount===0);
 }
 
 /* ---------- Kassieren / Verlauf ---------- */
 function checkout(){
   const c=calc();
-  if(c.count===0&&ret===0)return;
+  if(c.count===0&&c.retCount===0)return;
+  if(state.ui.change&&c.total>0.005){openPay();return;}
+  doCheckout();
+}
+function doCheckout(){
+  const c=calc();
+  if(c.count===0&&c.retCount===0){closePay();return;}
   const lines=state.drinks.filter(d=>order[d.id])
     .map(d=>({name:d.name,qty:order[d.id],price:d.price,cat:catName(d.cat)}));
-  state.history.unshift({
-    hid:id(),t:Date.now(),lines,count:c.count,depCount:c.depCount,ret,
-    drinksSum:c.drinksSum,depNew:c.depNew,depRet:c.depRet,total:c.total
-  });
-  save();resetOrder();renderHistory();
+  const retLines=Object.keys(ret).map(cid=>({cat:catName(cid),qty:ret[cid],dep:catDep(cid)}));
+  const snap={order:{...order},ret:{...ret},given};
+  const entry={
+    hid:id(),t:Date.now(),lines,retLines,count:c.count,depCount:c.depCount,ret:c.retCount,
+    drinksSum:c.drinksSum,depNew:c.depNew,depRet:c.depRet,total:c.total,
+    given:given,change:given===null?null:given-c.total
+  };
+  state.history.unshift(entry);
+  save();
+  haptic([12,45,20]);beep('pay');
+  const chg=entry.change;
+  closePay();
+  resetOrder();renderHistory();
+  toast(`Kassiert: ${eur(entry.total)}${chg!==null&&chg>0.005?` · Rückgeld ${eur(chg)}`:''}`,
+        'Rückgängig',()=>undoCheckout(entry.hid,snap),6000);
 }
-function resetOrder(){order={};ret=0;document.getElementById('retVal').textContent=0;renderGrid();renderTotals();}
+function undoCheckout(hid,snap){
+  state.history=state.history.filter(x=>x.hid!==hid);
+  order={...snap.order};ret={...snap.ret};given=null;
+  save();haptic(20);beep('undo');
+  renderPfand();renderGrid();renderTotals();renderHistory();
+  toast('Buchung wiederhergestellt');
+}
+function resetOrder(){
+  order={};ret={};given=null;
+  renderPfand();renderGrid();renderTotals();
+}
 function histLine(x){return x.lines.map(l=>`${l.qty}× ${l.name}`);}
 function renderHistory(){
   const h=document.getElementById('hist');h.innerHTML='';
@@ -683,7 +891,8 @@ function renderHistory(){
     el.innerHTML=`
       <div class="top"><span class="time">${time}</span><span class="sum">${eur(x.total)}</span></div>
       <div class="det">${items.length?esc(items.join(' · ')):'—'}
-      <br>Pfand neu ${x.depCount}× ${eur(x.depNew)} · zurück ${x.ret}× −${eur(x.depRet)}</div>`;
+      <br>Pfand neu ${x.depCount}× ${eur(x.depNew)} · zurück ${x.ret||0}× −${eur(x.depRet)}${
+        x.change!==null&&x.change!==undefined&&x.change>0.005?` · Rückgeld ${eur(x.change)}`:''}</div>`;
     h.appendChild(el);
   });
 }
@@ -746,7 +955,7 @@ function setBtnEmoji(btnId,v){
 
 /* ---------- Einstellungen ---------- */
 function openSettings(){document.getElementById('settings').classList.add('open');
-  document.getElementById('depInput').value=state.deposit;applyUI();renderCats();renderEdit();}
+  applyUI();renderCats();renderEdit();}
 function closeSettings(){document.getElementById('settings').classList.remove('open');}
 
 function catOptions(sel){
@@ -761,6 +970,8 @@ function renderCats(){
       <span class="cdot" style="background:${catColor(c.id)}"></span>
       <button class="emojibtn${c.emoji?'':' none'}">${c.emoji?esc(c.emoji):'＋'}</button>
       <input value="${esc(c.name)}" onchange="editCat('${c.id}','name',this.value)">
+      <input class="dep" type="number" step="0.5" min="0" inputmode="decimal" title="Pfand je Einheit (€)"
+             value="${c.deposit}" onchange="editCat('${c.id}','deposit',this.value)">
       <button class="del" onclick="delCat('${c.id}')">🗑</button>`;
     r.querySelector('.emojibtn').onclick=()=>pickEmoji(v=>editCat(c.id,'emoji',v));
     bindDrag(r);
@@ -771,16 +982,19 @@ function renderCats(){
 }
 function editCat(i,k,v){
   const c=state.cats.find(x=>x.id===i);if(!c)return;
-  c[k]=v;save();renderCats();renderEdit();renderTabs();renderGrid();
+  if(k==='deposit')v=Math.max(0,parseFloat((''+v).replace(',','.'))||0);
+  c[k]=v;save();renderCats();renderEdit();renderTabs();renderGrid();renderPfand();renderTotals();
 }
 function addCat(){
   const n=document.getElementById('newCatName').value.trim();
   const em=document.getElementById('newCatEmoji').dataset.emoji||'';
+  const dp=Math.max(0,parseFloat((document.getElementById('newCatDep').value||'0').replace(',','.'))||0);
   if(!n){toast('Name angeben');return;}
-  state.cats.push({id:id(),name:n,emoji:em});
+  state.cats.push({id:id(),name:n,emoji:em,deposit:dp});
   document.getElementById('newCatName').value='';
+  document.getElementById('newCatDep').value='';
   setBtnEmoji('newCatEmoji','');
-  save();renderCats();renderEdit();renderTabs();renderGrid();
+  save();renderCats();renderEdit();renderTabs();renderGrid();renderPfand();renderTotals();
 }
 function delCat(i){
   if(state.cats.length<2){toast('Mindestens eine Kategorie nötig');return;}
@@ -792,9 +1006,9 @@ function delCat(i){
     : `„${c.name}" wirklich löschen?`;
   if(!confirm(msg))return;
   used.forEach(d=>d.cat=rest[0].id);
-  state.cats=rest;
+  state.cats=rest;delete ret[i];
   if(state.ui.filter===i)state.ui.filter='all';
-  save();renderCats();renderEdit();renderTabs();renderGrid();
+  save();renderCats();renderEdit();renderTabs();renderGrid();renderPfand();renderTotals();
 }
 
 function renderEdit(){
@@ -819,13 +1033,13 @@ function editDrink(i,k,v){
   if(k==='price')v=parseFloat((''+v).replace(',','.'))||0;
   d[k]=v;save();
   if(k==='emoji'||k==='cat')renderEdit();
-  renderTabs();renderGrid();renderTotals();
+  renderTabs();renderGrid();renderPfand();renderTotals();
 }
 function delDrink(i){
   const d=state.drinks.find(x=>x.id===i);
   if(!confirm(`„${d?d.name:''}" wirklich löschen?`))return;
   state.drinks=state.drinks.filter(x=>x.id!==i);delete order[i];
-  save();renderEdit();renderGrid();renderTotals();
+  save();renderEdit();renderGrid();renderPfand();renderTotals();
 }
 function addDrink(){
   const n=document.getElementById('newName').value.trim();
@@ -837,7 +1051,7 @@ function addDrink(){
   state.drinks.push({id:id(),name:n,price:p,pfand:pf,emoji:em,cat:ct});
   document.getElementById('newName').value='';document.getElementById('newPrice').value='';
   setBtnEmoji('newEmoji','');document.getElementById('newPfand').checked=true;
-  save();renderEdit();renderTabs();renderGrid();
+  save();renderEdit();renderTabs();renderGrid();renderPfand();
 }
 function sortByPopularity(){
   const per={};
@@ -845,9 +1059,6 @@ function sortByPopularity(){
   state.drinks.sort((a,b)=>(per[b.name]||0)-(per[a.name]||0));
   save();renderEdit();renderGrid();toast('Nach Verkaufshäufigkeit sortiert');
 }
-document.getElementById('depInput').addEventListener('change',e=>{
-  state.deposit=parseFloat(e.target.value.replace(',','.'))||0;save();renderTotals();
-});
 document.getElementById('settings').addEventListener('click',e=>{if(e.target.id==='settings')closeSettings();});
 document.getElementById('log').addEventListener('click',e=>{if(e.target.id==='log')closeLog();});
 
@@ -1073,7 +1284,9 @@ function importData(inp){
       if(!d||!Array.isArray(d.drinks))throw 0;
       state={deposit:1,cats:[],drinks:[],history:[],ui:{...DEF_UI},...d};
       state.ui={...DEF_UI,...(state.ui||{})};
-      if(!Array.isArray(state.cats)||!state.cats.length)state.cats=[{id:id(),name:'Getränke',emoji:'🍺'}];
+      if(!Array.isArray(state.cats)||!state.cats.length)
+        state.cats=[{id:id(),name:'Getränke',emoji:'🍺',deposit:isFinite(d.deposit)?d.deposit:1}];
+      state.cats.forEach(c=>{if(!isFinite(c.deposit))c.deposit=isFinite(d.deposit)?d.deposit:1;});
       state.drinks.forEach(x=>{
         if(x.pfand===undefined)x.pfand=true;
         if(!x.id)x.id=id();
@@ -1081,8 +1294,7 @@ function importData(inp){
         if(!x.cat||catIndex(x.cat)<0)x.cat=state.cats[0].id;
       });
       state.history.forEach(x=>{if(!x.hid)x.hid=id();});
-      save();resetOrder();applyUI();renderCats();renderEdit();renderTabs();renderGrid();renderHistory();
-      document.getElementById('depInput').value=state.deposit;
+      save();resetOrder();applyUI();applyTheme();renderCats();renderEdit();renderTabs();renderGrid();renderHistory();
       toast('Daten importiert');
     }catch(e){alert('Datei konnte nicht gelesen werden.');}
     inp.value='';
@@ -1128,7 +1340,7 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
 }
 
 /* ---------- Start ---------- */
-load();applyUI();renderCats();renderTabs();renderGrid();renderTotals();renderHistory();syncWake();
+load();applyUI();applyTheme();renderCats();renderTabs();renderGrid();renderPfand();renderTotals();renderHistory();syncWake();
 </script>
 </body>
 </html>
