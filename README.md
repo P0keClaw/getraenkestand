@@ -1,0 +1,1 @@
+Ein Basic Kassensystem, was man am Getränkestand oder Essenstand auf einem Straßenfest nutzen kann. Codebasis wurde vollständig von Claude Opus 4.8 geschrieben. Sämtliche Daten wie Abrechnungen, Verlauf, Angebotsübersicht und Preise werden nur lokal gespeichert. 
